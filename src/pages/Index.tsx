@@ -28,11 +28,10 @@ const Index = () => {
         <div className="max-w-6xl mx-auto text-center">
           <div className="mb-6">
             <h1 className="text-5xl md:text-6xl font-light tracking-tight text-foreground mb-4">
-              Find the Best Price for the
-              <span className="block font-medium">Watch You Want</span>
+              Find the Best Price for Any Luxury Watch
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Compare prices across premium watch marketplaces. AI-powered matching ensures you find the exact model at the best price.
+              Compare listings across Chrono24, eBay, WatchBox and more — powered by AI.
             </p>
           </div>
           
@@ -52,6 +51,68 @@ const Index = () => {
               <TrendingUp className="h-4 w-4" />
               <span>Real-time Pricing</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SEO Content Sections */}
+      <section className="py-16 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-light text-center mb-12 text-foreground">
+            Instantly Compare Luxury Watch Prices
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="p-6">
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="h-6 w-6 text-slate-600" />
+              </div>
+              <h3 className="font-medium mb-2">AI-Powered Search</h3>
+              <p className="text-sm text-muted-foreground">
+                Our advanced algorithms scan hundreds of marketplaces to find exact matches for any watch model.
+              </p>
+            </div>
+            <div className="p-6">
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="h-6 w-6 text-slate-600" />
+              </div>
+              <h3 className="font-medium mb-2">Live Price Updates</h3>
+              <p className="text-sm text-muted-foreground">
+                Real-time pricing data ensures you never miss a deal or pay more than necessary.
+              </p>
+            </div>
+            <div className="p-6">
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ShieldCheck className="h-6 w-6 text-slate-600" />
+              </div>
+              <h3 className="font-medium mb-2">Trusted Sources</h3>
+              <p className="text-sm text-muted-foreground">
+                Every listing comes from verified dealers and authenticated marketplaces.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 px-4 bg-slate-50">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-3xl font-light mb-12 text-foreground">
+            Set Alerts and Track Market Trends
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="p-8">
+              <h3 className="text-xl font-medium mb-4">Price Alerts</h3>
+              <p className="text-muted-foreground mb-6">
+                Get notified instantly when your dream watch drops below your target price across all major marketplaces.
+              </p>
+              <Button variant="outline">Set Alert</Button>
+            </Card>
+            <Card className="p-8">
+              <h3 className="text-xl font-medium mb-4">Market Analytics</h3>
+              <p className="text-muted-foreground mb-6">
+                Track pricing trends, market performance, and investment potential for any luxury watch model.
+              </p>
+              <Button variant="outline">View Trends</Button>
+            </Card>
           </div>
         </div>
       </section>
