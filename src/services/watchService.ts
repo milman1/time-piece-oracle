@@ -1,4 +1,6 @@
 
+import { getWatchImage } from './imageService';
+
 export interface Watch {
   id: number;
   brand: string;
@@ -30,7 +32,7 @@ const mockWatches: Watch[] = [
     rating: 4.9,
     reviews: 2847,
     marketplace: 'WatchBox',
-    image: '/placeholder.svg',
+    image: getWatchImage('126610LN').url,
     trusted: true,
     year: 2022,
     description: 'Black dial and bezel, steel case and bracelet'
@@ -47,7 +49,7 @@ const mockWatches: Watch[] = [
     rating: 4.8,
     reviews: 1923,
     marketplace: 'Chrono24',
-    image: '/placeholder.svg',
+    image: getWatchImage('310.30.42.50.01.001').url,
     trusted: true,
     year: 2021,
     description: 'Moonwatch with hesalite crystal'
@@ -64,7 +66,7 @@ const mockWatches: Watch[] = [
     rating: 4.7,
     reviews: 756,
     marketplace: 'eBay',
-    image: '/placeholder.svg',
+    image: getWatchImage('79030N').url,
     trusted: true,
     year: 2023,
     description: 'Navy blue dial and bezel'
@@ -81,7 +83,7 @@ const mockWatches: Watch[] = [
     rating: 4.9,
     reviews: 3421,
     marketplace: 'WatchStation',
-    image: '/placeholder.svg',
+    image: getWatchImage('WSSA0029').url,
     trusted: true,
     year: 2022,
     description: 'Steel case with blue leather strap'
@@ -98,7 +100,7 @@ const mockWatches: Watch[] = [
     rating: 4.9,
     reviews: 892,
     marketplace: 'Chrono24',
-    image: '/placeholder.svg',
+    image: getWatchImage('5711/1A-010').url,
     trusted: true,
     year: 2020,
     description: 'Blue dial, discontinued model'
@@ -115,7 +117,7 @@ const mockWatches: Watch[] = [
     rating: 4.8,
     reviews: 1247,
     marketplace: 'WatchBox',
-    image: '/placeholder.svg',
+    image: getWatchImage('15400ST.OO.1220ST.01').url,
     trusted: true,
     year: 2019,
     description: 'Black tapisserie dial, 41mm'
@@ -132,7 +134,7 @@ const mockWatches: Watch[] = [
     rating: 4.9,
     reviews: 2847,
     marketplace: 'Chrono24',
-    image: '/placeholder.svg',
+    image: getWatchImage('126710BLNR').url,
     trusted: true,
     year: 2023,
     description: 'Batman bezel, Jubilee bracelet'
@@ -149,7 +151,7 @@ const mockWatches: Watch[] = [
     rating: 4.6,
     reviews: 1523,
     marketplace: 'eBay',
-    image: '/placeholder.svg',
+    image: getWatchImage('215.30.44.21.01.001').url,
     trusted: true,
     year: 2021,
     description: 'Black dial and bezel, 43.5mm'

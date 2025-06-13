@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Star, ShieldCheck, Eye, Heart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Watch } from '@/services/watchService';
+import { WatchImage } from './WatchImage';
 
 interface WatchGridProps {
   watches: Watch[];
@@ -37,9 +37,12 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
             <div className="flex gap-6">
               {/* Watch Image */}
               <div className="flex-shrink-0">
-                <div className="w-24 h-24 bg-slate-100 rounded-lg flex items-center justify-center">
-                  <div className="w-16 h-16 bg-slate-300 rounded-full"></div>
-                </div>
+                <WatchImage
+                  reference={watch.reference}
+                  brand={watch.brand}
+                  model={watch.model}
+                  className="w-24 h-24"
+                />
               </div>
               
               {/* Watch Details */}
