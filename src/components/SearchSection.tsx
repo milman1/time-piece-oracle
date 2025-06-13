@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -15,9 +15,12 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      onSearch(query);
-    }
+    onSearch(query);
+  };
+
+  const handleClear = () => {
+    setQuery('');
+    onSearch('');
   };
 
   const popularSearches = [
@@ -41,6 +44,16 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
             onChange={(e) => setQuery(e.target.value)}
             className="pl-12 pr-32 py-6 text-lg border-2 border-border focus:border-slate-400 rounded-xl shadow-sm"
           />
+          {query && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleClear}
+              className="absolute right-24 top-1/2 transform -translate-y-1/2 p-1 h-8 w-8"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
           <Button 
             type="submit"
             className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-slate-900 hover:bg-slate-800 text-white px-6"

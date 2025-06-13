@@ -1,81 +1,37 @@
 
 import React from 'react';
-import { Star, ShieldCheck, Eye } from 'lucide-react';
+import { Star, ShieldCheck, Eye, Heart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { Watch } from '@/services/watchService';
 
-export const WatchGrid = () => {
-  const mockWatches = [
-    {
-      id: 1,
-      brand: 'Rolex',
-      model: 'Submariner Date',
-      reference: '126610LN',
-      price: 12950,
-      originalPrice: 13500,
-      condition: 'Excellent',
-      seller: 'Crown & Caliber',
-      rating: 4.9,
-      reviews: 2847,
-      marketplace: 'WatchBox',
-      image: '/placeholder.svg',
-      trusted: true,
-      year: 2022
-    },
-    {
-      id: 2,
-      brand: 'Omega',
-      model: 'Speedmaster Professional',
-      reference: '310.30.42.50.01.001',
-      price: 4250,
-      originalPrice: 4850,
-      condition: 'Very Good',
-      seller: 'Hodinkee Shop',
-      rating: 4.8,
-      reviews: 1923,
-      marketplace: 'Chrono24',
-      image: '/placeholder.svg',
-      trusted: true,
-      year: 2021
-    },
-    {
-      id: 3,
-      brand: 'Tudor',
-      model: 'Black Bay 58',
-      reference: '79030N',
-      price: 2890,
-      originalPrice: 3200,
-      condition: 'New',
-      seller: 'Tourneau',
-      rating: 4.7,
-      reviews: 756,
-      marketplace: 'eBay',
-      image: '/placeholder.svg',
-      trusted: true,
-      year: 2023
-    },
-    {
-      id: 4,
-      brand: 'Cartier',
-      model: 'Santos Medium',
-      reference: 'WSSA0029',
-      price: 5650,
-      originalPrice: 6100,
-      condition: 'Excellent',
-      seller: 'Bob\'s Watches',
-      rating: 4.9,
-      reviews: 3421,
-      marketplace: 'WatchStation',
-      image: '/placeholder.svg',
-      trusted: true,
-      year: 2022
-    }
-  ];
+interface WatchGridProps {
+  watches: Watch[];
+}
+
+export const WatchGrid = ({ watches }: WatchGridProps) => {
+  const handleWatchlist = (watchId: number) => {
+    console.log(`Added watch ${watchId} to watchlist`);
+    // This would integrate with backend later
+  };
+
+  if (watches.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Eye className="h-8 w-8 text-slate-400" />
+        </div>
+        <h3 className="text-lg font-medium text-foreground mb-2">No watches found</h3>
+        <p className="text-muted-foreground">Try adjusting your search terms or filters</p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-      {mockWatches.map((watch) => (
+      {watches.map((watch) => (
         <Card key={watch.id} className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-slate-300">
           <CardContent className="p-6">
             <div className="flex gap-6">
@@ -97,9 +53,19 @@ export const WatchGrid = () => {
                       Ref: {watch.reference} • {watch.year}
                     </p>
                   </div>
-                  {watch.trusted && (
-                    <ShieldCheck className="h-5 w-5 text-green-600 flex-shrink-0" />
-                  )}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {watch.trusted && (
+                      <ShieldCheck className="h-5 w-5 text-green-600" />
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleWatchlist(watch.id)}
+                      className="p-1 h-8 w-8"
+                    >
+                      <Heart className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 
                 {/* Price */}
@@ -108,13 +74,13 @@ export const WatchGrid = () => {
                     <span className="text-2xl font-semibold text-foreground">
                       ${watch.price.toLocaleString()}
                     </span>
-                    {watch.originalPrice > watch.price && (
+                    {watch.originalPrice && watch.originalPrice > watch.price && (
                       <span className="text-sm text-muted-foreground line-through">
                         ${watch.originalPrice.toLocaleString()}
                       </span>
                     )}
                   </div>
-                  {watch.originalPrice > watch.price && (
+                  {watch.originalPrice && watch.originalPrice > watch.price && (
                     <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
                       Save ${(watch.originalPrice - watch.price).toLocaleString()}
                     </Badge>
@@ -139,10 +105,19 @@ export const WatchGrid = () => {
                 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
-                  <Button className="flex-1 bg-slate-900 hover:bg-slate-800 text-white">
-                    View Details
-                  </Button>
-                  <Button variant="outline" size="sm">
+                  <Link 
+                    to={`/watch/${watch.reference}`} 
+                    className="flex-1"
+                  >
+                    <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">
+                      View Details
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleWatchlist(watch.id)}
+                  >
                     <Eye className="h-4 w-4" />
                   </Button>
                 </div>

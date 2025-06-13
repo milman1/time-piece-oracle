@@ -9,15 +9,22 @@ import { SearchSection } from '@/components/SearchSection';
 import { WatchGrid } from '@/components/WatchGrid';
 import { TrustSection } from '@/components/TrustSection';
 import { Header } from '@/components/Header';
+import { searchWatches, getAllWatches, Watch } from '@/services/watchService';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
+  const [searchResults, setSearchResults] = useState<Watch[]>([]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+    const results = searchWatches(query);
+    setSearchResults(results);
     setShowResults(true);
   };
+
+  // Show popular watches initially
+  const popularWatches = getAllWatches().slice(0, 4);
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,8 +62,38 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Results Section */}
+      {showResults ? (
+        <section className="py-16 px-4 bg-white">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-8">
+              <h2 className="text-2xl font-medium mb-2">
+                Search Results for "{searchQuery}"
+              </h2>
+              <p className="text-muted-foreground">
+                Found {searchResults.length} listings from verified marketplaces
+              </p>
+            </div>
+            <WatchGrid watches={searchResults} />
+          </div>
+        </section>
+      ) : (
+        /* Popular Watches Section */
+        <section className="py-16 px-4 bg-white">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-light mb-4">Popular Luxury Watches</h2>
+              <p className="text-muted-foreground">
+                Trending watches from verified sellers worldwide
+              </p>
+            </div>
+            <WatchGrid watches={popularWatches} />
+          </div>
+        </section>
+      )}
+
       {/* SEO Content Sections */}
-      <section className="py-16 px-4 bg-white">
+      <section className="py-16 px-4 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-light text-center mb-12 text-foreground">
             Instantly Compare Luxury Watch Prices
@@ -93,7 +130,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="py-16 px-4 bg-slate-50">
+      <section className="py-16 px-4 bg-white">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-3xl font-light mb-12 text-foreground">
             Set Alerts and Track Market Trends
@@ -104,7 +141,9 @@ const Index = () => {
               <p className="text-muted-foreground mb-6">
                 Get notified instantly when your dream watch drops below your target price across all major marketplaces.
               </p>
-              <Button variant="outline">Set Alert</Button>
+              <Button variant="outline" asChild>
+                <a href="/price-alert">Set Alert</a>
+              </Button>
             </Card>
             <Card className="p-8">
               <h3 className="text-xl font-medium mb-4">Market Analytics</h3>
@@ -116,23 +155,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      {/* Results Section */}
-      {showResults && (
-        <section className="py-16 px-4 bg-white">
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-8">
-              <h2 className="text-2xl font-medium mb-2">
-                Search Results for "{searchQuery}"
-              </h2>
-              <p className="text-muted-foreground">
-                Found 247 listings from verified marketplaces
-              </p>
-            </div>
-            <WatchGrid />
-          </div>
-        </section>
-      )}
 
       {/* How It Works */}
       <TrustSection />
