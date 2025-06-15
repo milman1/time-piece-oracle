@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ interface SearchSectionProps {
 export const SearchSection = ({ onSearch }: SearchSectionProps) => {
   const [query, setQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [boxAndPapers, setBoxAndPapers] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +75,7 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
         </Button>
         
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-slate-50 rounded-xl border">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-slate-50 rounded-xl border">
             <div>
               <label className="block text-sm font-medium mb-2">Price Range</label>
               <select className="w-full p-2 border rounded-md">
@@ -90,20 +90,26 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
               <label className="block text-sm font-medium mb-2">Condition</label>
               <select className="w-full p-2 border rounded-md">
                 <option>Any Condition</option>
-                <option>New</option>
+                <option>Unworn</option>
                 <option>Excellent</option>
                 <option>Very Good</option>
                 <option>Good</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Seller Rating</label>
-              <select className="w-full p-2 border rounded-md">
-                <option>Any Rating</option>
-                <option>5 Stars</option>
-                <option>4+ Stars</option>
-                <option>3+ Stars</option>
-              </select>
+              <label className="block text-sm font-medium mb-2">Box & Papers</label>
+              <div className="flex items-center h-full">
+                <input
+                  type="checkbox"
+                  checked={boxAndPapers}
+                  onChange={() => setBoxAndPapers(!boxAndPapers)}
+                  className="rounded border-gray-300 text-slate-900 focus:ring-slate-900 w-5 h-5"
+                  id="box-and-papers"
+                />
+                <label htmlFor="box-and-papers" className="ml-2 text-sm">
+                  Included
+                </label>
+              </div>
             </div>
           </div>
         )}
