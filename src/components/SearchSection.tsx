@@ -1,20 +1,43 @@
+
 import React, { useState } from 'react';
 import { Search, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface SearchSectionProps {
   onSearch: (query: string) => void;
 }
 
+const BRAND_OPTIONS = [
+  "Any Brand",
+  "Rolex",
+  "Omega",
+  "Patek Philippe",
+  "Audemars Piguet",
+  "Cartier",
+  "Tag Heuer",
+  "Grand Seiko",
+  "Breitling",
+  "IWC",
+];
+
 export const SearchSection = ({ onSearch }: SearchSectionProps) => {
   const [query, setQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [boxAndPapers, setBoxAndPapers] = useState(false);
+  const [brand, setBrand] = useState('Any Brand');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // You could integrate the selected filters in onSearch as needed
     onSearch(query);
   };
 
@@ -76,6 +99,21 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
         
         {showFilters && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-slate-50 rounded-xl border">
+            <div>
+              <label className="block text-sm font-medium mb-2">Brand</label>
+              <Select value={brand} onValueChange={setBrand}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a brand" />
+                </SelectTrigger>
+                <SelectContent className="z-50 bg-white">
+                  {BRAND_OPTIONS.map(option => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <label className="block text-sm font-medium mb-2">Price Range</label>
               <select className="w-full p-2 border rounded-md">
