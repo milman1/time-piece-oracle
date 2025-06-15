@@ -9,6 +9,7 @@ import { SearchSection } from '@/components/SearchSection';
 import { WatchGrid } from '@/components/WatchGrid';
 import { TrustSection } from '@/components/TrustSection';
 import { Header } from '@/components/Header';
+import { Logo } from '@/components/Logo';
 import { searchWatches, getAllWatches, Watch } from '@/services/watchService';
 
 const Index = () => {
@@ -31,13 +32,13 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-20 px-4 bg-gradient-to-b from-slate-50 to-white">
+      <section className="relative py-16 md:py-20 px-4 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-6xl mx-auto text-center">
           <div className="mb-6">
-            <h1 className="text-5xl md:text-6xl font-light tracking-tight text-foreground mb-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-foreground mb-4">
               Find the Best Price for Any Luxury Watch
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Compare listings across Chrono24, eBay, WatchBox and more — powered by AI.
             </p>
           </div>
@@ -45,7 +46,7 @@ const Index = () => {
           <SearchSection onSearch={handleSearch} />
           
           {/* Trust Indicators */}
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-muted-foreground">
+          <div className="mt-8 md:mt-12 flex flex-wrap justify-center items-center gap-4 md:gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />
               <span>Verified Sellers</span>
@@ -64,10 +65,10 @@ const Index = () => {
 
       {/* Results Section */}
       {showResults ? (
-        <section className="py-16 px-4 bg-white">
+        <section className="py-12 md:py-16 px-4 bg-white">
           <div className="max-w-6xl mx-auto">
             <div className="mb-8">
-              <h2 className="text-2xl font-medium mb-2">
+              <h2 className="text-xl md:text-2xl font-medium mb-2">
                 Search Results for "{searchQuery}"
               </h2>
               <p className="text-muted-foreground">
@@ -79,10 +80,10 @@ const Index = () => {
         </section>
       ) : (
         /* Popular Watches Section */
-        <section className="py-16 px-4 bg-white">
+        <section className="py-12 md:py-16 px-4 bg-white">
           <div className="max-w-6xl mx-auto">
             <div className="mb-8 text-center">
-              <h2 className="text-3xl font-light mb-4">Popular Luxury Watches</h2>
+              <h2 className="text-2xl md:text-3xl font-light mb-4">Popular Luxury Watches</h2>
               <p className="text-muted-foreground">
                 Trending watches from verified sellers worldwide
               </p>
@@ -93,9 +94,9 @@ const Index = () => {
       )}
 
       {/* SEO Content Sections */}
-      <section className="py-16 px-4 bg-slate-50">
+      <section className="py-12 md:py-16 px-4 bg-slate-50">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-light text-center mb-12 text-foreground">
+          <h2 className="text-2xl md:text-3xl font-light text-center mb-12 text-foreground">
             Instantly Compare Luxury Watch Prices
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
@@ -130,14 +131,14 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="py-16 px-4 bg-white">
+      <section className="py-12 md:py-16 px-4 bg-white">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-3xl font-light mb-12 text-foreground">
+          <h2 className="text-2xl md:text-3xl font-light mb-12 text-foreground">
             Set Alerts and Track Market Trends
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card className="p-8">
-              <h3 className="text-xl font-medium mb-4">Price Alerts</h3>
+            <Card className="p-6 md:p-8">
+              <h3 className="text-lg md:text-xl font-medium mb-4">Price Alerts</h3>
               <p className="text-muted-foreground mb-6">
                 Get notified instantly when your dream watch drops below your target price across all major marketplaces.
               </p>
@@ -145,8 +146,8 @@ const Index = () => {
                 <a href="/price-alert">Set Alert</a>
               </Button>
             </Card>
-            <Card className="p-8">
-              <h3 className="text-xl font-medium mb-4">Market Analytics</h3>
+            <Card className="p-6 md:p-8">
+              <h3 className="text-lg md:text-xl font-medium mb-4">Market Analytics</h3>
               <p className="text-muted-foreground mb-6">
                 Track pricing trends, market performance, and investment potential for any luxury watch model.
               </p>
@@ -160,14 +161,12 @@ const Index = () => {
       <TrustSection />
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12 px-4">
+      <footer className="bg-slate-900 text-white py-8 md:py-12 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="mb-8">
-            <img 
-              src="/lovable-uploads/cee0e6a8-7b46-4b66-9d9b-38dfb5ccb94f.png" 
-              alt="Hours Logo" 
-              className="h-14 w-auto mx-auto mb-4"
-            />
+          <div className="mb-6 md:mb-8">
+            <div className="mb-4">
+              <Logo size="lg" variant="footer" />
+            </div>
             <p className="text-slate-400">The smartest way to buy luxury watches</p>
           </div>
           <div className="text-slate-400 text-sm">

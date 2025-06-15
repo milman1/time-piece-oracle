@@ -32,18 +32,18 @@ const PriceAlert = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="py-20 px-4">
+      <main className="py-12 md:py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-light tracking-tight text-foreground mb-4">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-tight text-foreground mb-4">
             Set a Price Alert for Any Luxury Watch
           </h1>
-          <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground mb-8 md:mb-12 leading-relaxed">
             Get notified the moment your dream watch drops in price across major marketplaces.
           </p>
 
           {!isSubmitted ? (
             <Card className="border-2 shadow-lg">
-              <CardContent className="p-8">
+              <CardContent className="p-6 md:p-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2 text-left">
                     <Label htmlFor="brand" className="text-base font-medium">Brand</Label>
@@ -112,12 +112,12 @@ const PriceAlert = () => {
             </Card>
           ) : (
             <Card className="border-2 shadow-lg bg-slate-50">
-              <CardContent className="p-8 text-center">
+              <CardContent className="p-6 md:p-8 text-center">
                 <div className="mb-4">
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Mail className="h-8 w-8 text-green-600" />
                   </div>
-                  <h2 className="text-2xl font-medium text-foreground mb-2">
+                  <h2 className="text-xl md:text-2xl font-medium text-foreground mb-2">
                     Alert Set Successfully!
                   </h2>
                   <p className="text-muted-foreground">
@@ -129,7 +129,7 @@ const PriceAlert = () => {
           )}
 
           {/* Trust Indicators */}
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-muted-foreground">
+          <div className="mt-8 md:mt-12 flex flex-wrap justify-center items-center gap-4 md:gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
               <span>No Spam</span>
