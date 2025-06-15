@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -8,8 +7,12 @@ export const Header = () => {
     <header className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <Link to="/" className="text-2xl font-light tracking-wide text-foreground hover:text-muted-foreground transition-colors">
-            Hours
+          <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+            <img 
+              src="/lovable-uploads/58d3d69f-fc2b-454f-ae3e-0248ad8c28b5.png" 
+              alt="Hours Logo" 
+              className="h-8 w-auto"
+            />
           </Link>
         </div>
         

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, ShieldCheck, Star, TrendingUp, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -163,7 +162,11 @@ const Index = () => {
       <footer className="bg-slate-900 text-white py-12 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <div className="mb-8">
-            <h3 className="text-2xl font-light mb-2">Hours</h3>
+            <img 
+              src="/lovable-uploads/cee0e6a8-7b46-4b66-9d9b-38dfb5ccb94f.png" 
+              alt="Hours Logo" 
+              className="h-10 w-auto mx-auto mb-4"
+            />
             <p className="text-slate-400">The smartest way to buy luxury watches</p>
           </div>
           <div className="text-slate-400 text-sm">
