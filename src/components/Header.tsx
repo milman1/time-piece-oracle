@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -11,7 +12,7 @@ export const Header = () => {
             <img 
               src="/lovable-uploads/58d3d69f-fc2b-454f-ae3e-0248ad8c28b5.png" 
               alt="Hours Logo" 
-              className="h-8 w-auto"
+              className="h-12 w-auto"
             />
           </Link>
         </div>
