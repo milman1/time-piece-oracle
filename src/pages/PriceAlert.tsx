@@ -5,7 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Header } from '@/components/Header';
-import { Shield, Mail, Users } from 'lucide-react';
+import { Shield, Mail, Users, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const PriceAlert = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +17,8 @@ const PriceAlert = () => {
     email: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -23,9 +27,107 @@ const PriceAlert = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    if (!formData.brand.trim()) {
+      toast({
+        title: "Brand Required",
+        description: "Please enter a watch brand.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!formData.model.trim()) {
+      toast({
+        title: "Model Required",
+        description: "Please enter a watch model or reference number.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    const price = parseFloat(formData.targetPrice);
+    if (!formData.targetPrice || isNaN(price) || price <= 0) {
+      toast({
+        title: "Invalid Price",
+        description: "Please enter a valid target price greater than 0.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('price_alerts')
+        .insert([
+          {
+            brand: formData.brand.trim(),
+            model: formData.model.trim(),
+            target_price: parseFloat(formData.targetPrice),
+            email: formData.email.trim()
+          }
+        ]);
+      
+      if (error) {
+        console.error('Error inserting price alert:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create price alert. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      console.log('Price alert created successfully:', formData);
+      setIsSubmitted(true);
+      
+      toast({
+        title: "Success!",
+        description: "Your price alert has been created successfully.",
+      });
+      
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      brand: '',
+      model: '',
+      targetPrice: '',
+      email: ''
+    });
+    setIsSubmitted(false);
   };
 
   return (
@@ -56,6 +158,7 @@ const PriceAlert = () => {
                       onChange={handleInputChange}
                       className="h-12 text-lg"
                       required
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -70,6 +173,7 @@ const PriceAlert = () => {
                       onChange={handleInputChange}
                       className="h-12 text-lg"
                       required
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -84,6 +188,9 @@ const PriceAlert = () => {
                       onChange={handleInputChange}
                       className="h-12 text-lg"
                       required
+                      min="1"
+                      step="0.01"
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -98,14 +205,23 @@ const PriceAlert = () => {
                       onChange={handleInputChange}
                       className="h-12 text-lg"
                       required
+                      disabled={isLoading}
                     />
                   </div>
 
                   <Button 
                     type="submit" 
                     className="w-full h-12 text-lg bg-slate-900 hover:bg-slate-800 text-white mt-8"
+                    disabled={isLoading}
                   >
-                    Notify Me
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Alert...
+                      </>
+                    ) : (
+                      'Notify Me'
+                    )}
                   </Button>
                 </form>
               </CardContent>
@@ -120,9 +236,16 @@ const PriceAlert = () => {
                   <h2 className="text-xl md:text-2xl font-medium text-foreground mb-2">
                     Alert Set Successfully!
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-6">
                     We'll notify you at <strong>{formData.email}</strong> when a {formData.brand} {formData.model} is listed below ${formData.targetPrice}.
                   </p>
+                  <Button 
+                    onClick={resetForm}
+                    variant="outline"
+                    className="mt-4"
+                  >
+                    Create Another Alert
+                  </Button>
                 </div>
               </CardContent>
             </Card>
