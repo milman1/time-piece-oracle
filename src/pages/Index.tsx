@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, ShieldCheck, Star, TrendingUp, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { SearchSection } from '@/components/SearchSection';
+import { HeroSearch } from '@/components/HeroSearch';
 import { WatchGrid } from '@/components/WatchGrid';
 import { WatchRecommendations } from '@/components/WatchRecommendations';
 import { TrustSection } from '@/components/TrustSection';
@@ -82,19 +82,20 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section */}
+      {/* Hero Section with New Search */}
       <section className="relative py-16 md:py-20 px-4 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="mb-6">
+          <div className="mb-8">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-foreground mb-4">
               Find the Best Price for Any Luxury Watch
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
               Compare listings across Chrono24, eBay, WatchBox and more — powered by AI.
             </p>
           </div>
           
-          <SearchSection onSearch={handleSearch} />
+          {/* New Hero Search Component */}
+          <HeroSearch onSearch={handleSearch} />
           
           {/* Trust Indicators */}
           <div className="mt-8 md:mt-12 flex flex-wrap justify-center items-center gap-4 md:gap-8 text-sm text-muted-foreground">
