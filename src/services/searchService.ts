@@ -30,6 +30,13 @@ export interface Watch {
   strap?: string;
 }
 
+export interface WatchRecommendation {
+  brand: string;
+  model: string;
+  style: string;
+  reason: string;
+}
+
 export const parseSearchQuery = async (query: string): Promise<WatchFilters> => {
   try {
     const response = await supabase.functions.invoke('parse-watch-search', {
@@ -46,6 +53,97 @@ export const parseSearchQuery = async (query: string): Promise<WatchFilters> => 
     console.error('Error calling parse-watch-search function:', error);
     return {};
   }
+};
+
+export const getWatchRecommendations = async (originalQuery: string, filters: WatchFilters): Promise<WatchRecommendation[]> => {
+  try {
+    const response = await supabase.functions.invoke('get-watch-recommendations', {
+      body: { 
+        originalQuery,
+        filters 
+      }
+    });
+
+    if (response.error) {
+      console.error('Error getting watch recommendations:', response.error);
+      // Return fallback recommendations
+      return getFallbackRecommendations(filters);
+    }
+
+    return response.data?.recommendations || getFallbackRecommendations(filters);
+  } catch (error) {
+    console.error('Error calling get-watch-recommendations function:', error);
+    return getFallbackRecommendations(filters);
+  }
+};
+
+const getFallbackRecommendations = (filters: WatchFilters): WatchRecommendation[] => {
+  const fallbacks = [
+    {
+      brand: "Seiko",
+      model: "Prospex",
+      style: "diver",
+      reason: "Affordable dive watch with excellent build quality"
+    },
+    {
+      brand: "Citizen",
+      model: "Eco-Drive",
+      style: "dress",
+      reason: "Solar-powered dress watch with classic styling"
+    },
+    {
+      brand: "Orient",
+      model: "Bambino",
+      style: "dress",
+      reason: "Elegant automatic dress watch at a great value"
+    },
+    {
+      brand: "Casio",
+      model: "G-Shock",
+      style: "sport",
+      reason: "Durable sports watch for active lifestyles"
+    },
+    {
+      brand: "Hamilton",
+      model: "Khaki Field",
+      style: "pilot",
+      reason: "Military-inspired field watch with Swiss movement"
+    }
+  ];
+
+  // If user searched for a specific style, prioritize that
+  if (filters.style) {
+    return fallbacks.filter(rec => rec.style === filters.style).slice(0, 3);
+  }
+
+  // If user searched for a specific brand, suggest similar alternatives
+  if (filters.brand) {
+    const luxuryBrands = ['rolex', 'omega', 'patek philippe', 'audemars piguet'];
+    if (luxuryBrands.some(brand => filters.brand?.toLowerCase().includes(brand))) {
+      return [
+        {
+          brand: "Tudor",
+          model: "Black Bay",
+          style: "diver",
+          reason: "Rolex's sister brand offering similar quality at lower prices"
+        },
+        {
+          brand: "Longines",
+          model: "Heritage",
+          style: "dress",
+          reason: "Swiss luxury with excellent heritage and craftsmanship"
+        },
+        {
+          brand: "Frederique Constant",
+          model: "Classics",
+          style: "dress",
+          reason: "Affordable luxury with in-house movements"
+        }
+      ];
+    }
+  }
+
+  return fallbacks.slice(0, 3);
 };
 
 export const searchWatchesWithFilters = async (filters: WatchFilters, textQuery?: string): Promise<Watch[]> => {
@@ -132,7 +230,7 @@ export const searchWatchesWithFilters = async (filters: WatchFilters, textQuery?
       console.error('Error searching watches:', error);
       // Fallback to a simpler query if the RPC doesn't work
       const { data: fallbackData, error: fallbackError } = await supabase
-        .from('watches' as any)
+        .from('watches')
         .select('*')
         .limit(50);
       

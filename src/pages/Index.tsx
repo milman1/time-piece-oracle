@@ -7,21 +7,25 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { SearchSection } from '@/components/SearchSection';
 import { WatchGrid } from '@/components/WatchGrid';
+import { WatchRecommendations } from '@/components/WatchRecommendations';
 import { TrustSection } from '@/components/TrustSection';
 import { Header } from '@/components/Header';
 import { Logo } from '@/components/Logo';
 import { searchWatches, getAllWatches, Watch } from '@/services/watchService';
-import { searchWatchesWithFilters, WatchFilters } from '@/services/searchService';
+import { searchWatchesWithFilters, getWatchRecommendations, WatchFilters, WatchRecommendation } from '@/services/searchService';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [searchResults, setSearchResults] = useState<Watch[]>([]);
+  const [recommendations, setRecommendations] = useState<WatchRecommendation[]>([]);
+  const [lastSearchFilters, setLastSearchFilters] = useState<WatchFilters>({});
   const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = async (query: string, filters?: WatchFilters) => {
     setSearchQuery(query);
     setIsSearching(true);
+    setRecommendations([]); // Clear previous recommendations
 
     try {
       let results: Watch[] = [];
@@ -29,25 +33,46 @@ const Index = () => {
       if (filters && Object.keys(filters).length > 0) {
         // Use AI-powered search with filters
         results = await searchWatchesWithFilters(filters, query);
+        setLastSearchFilters(filters);
       } else if (query.trim()) {
         // Fallback to basic text search
         results = searchWatches(query);
+        setLastSearchFilters({});
       } else {
         // Show all watches if no query
         results = getAllWatches();
+        setLastSearchFilters({});
       }
 
       setSearchResults(results);
       setShowResults(true);
+
+      // If no results found and we have a search query, get recommendations
+      if (results.length === 0 && query.trim()) {
+        console.log('No results found, getting recommendations...');
+        const recs = await getWatchRecommendations(query, filters || {});
+        setRecommendations(recs);
+      }
     } catch (error) {
       console.error('Search error:', error);
       // Fallback to basic search
       const results = searchWatches(query);
       setSearchResults(results);
       setShowResults(true);
+      
+      // Get recommendations if no results
+      if (results.length === 0 && query.trim()) {
+        const recs = await getWatchRecommendations(query, {});
+        setRecommendations(recs);
+      }
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const handleSearchRecommendation = (brand: string, model: string) => {
+    const newQuery = `${brand} ${model}`;
+    handleSearch(newQuery);
   };
 
   // Show popular watches initially
@@ -112,7 +137,16 @@ const Index = () => {
                 <p className="text-muted-foreground">AI is parsing your search query...</p>
               </div>
             ) : (
-              <WatchGrid watches={searchResults} />
+              <>
+                <WatchGrid watches={searchResults} />
+                {searchResults.length === 0 && recommendations.length > 0 && (
+                  <WatchRecommendations
+                    recommendations={recommendations}
+                    originalQuery={searchQuery}
+                    onSearchRecommendation={handleSearchRecommendation}
+                  />
+                )}
+              </>
             )}
           </div>
         </section>
