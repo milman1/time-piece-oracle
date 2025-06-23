@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Star, ShieldCheck, Eye, Heart } from 'lucide-react';
+import { Star, ShieldCheck, Eye, Heart, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,19 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
     return discountPercentage >= 15;
   };
 
+  const getMarketplaceUrl = (watch: Watch) => {
+    // Generate marketplace URLs based on the marketplace name
+    const marketplaces: { [key: string]: string } = {
+      'Chrono24': `https://www.chrono24.com/search/index.htm?query=${encodeURIComponent(watch.brand + ' ' + watch.model)}`,
+      'eBay': `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(watch.brand + ' ' + watch.model + ' ' + watch.reference)}`,
+      'WatchBox': `https://www.thewatchbox.com/watches/?search=${encodeURIComponent(watch.brand + ' ' + watch.model)}`,
+      'Crown & Caliber': `https://www.crownandcaliber.com/search?q=${encodeURIComponent(watch.brand + ' ' + watch.model)}`,
+      'Hodinkee Shop': `https://shop.hodinkee.com/search?q=${encodeURIComponent(watch.brand + ' ' + watch.model)}`
+    };
+    
+    return marketplaces[watch.marketplace] || `https://www.google.com/search?q=${encodeURIComponent(watch.brand + ' ' + watch.model + ' ' + watch.reference + ' buy')}`;
+  };
+
   if (watches.length === 0) {
     return (
       <div className="text-center py-12">
@@ -39,7 +52,7 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
       {watches.map((watch) => (
-        <Card key={watch.id} className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-slate-300">
+        <Card key={watch.id} className="group hover:shadow-xl transition-all duration-300 border border-slate-200 hover:border-slate-300 rounded-xl shadow-md">
           <CardContent className="p-6">
             <div className="flex gap-6">
               {/* Watch Image */}
@@ -48,7 +61,7 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
                   reference={watch.reference}
                   brand={watch.brand}
                   model={watch.model}
-                  className="w-24 h-24"
+                  className="w-24 h-24 rounded-lg shadow-sm"
                 />
               </div>
               
@@ -56,7 +69,7 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h3 className="font-medium text-lg text-foreground group-hover:text-slate-600 transition-colors">
+                    <h3 className="font-semibold text-lg text-foreground group-hover:text-slate-600 transition-colors">
                       {watch.brand} {watch.model}
                     </h3>
                     <p className="text-sm text-muted-foreground">
@@ -71,7 +84,7 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleWatchlist(watch.id)}
-                      className="p-1 h-8 w-8"
+                      className="p-1 h-8 w-8 hover:bg-slate-100 rounded-full"
                     >
                       <Heart className="h-4 w-4" />
                     </Button>
@@ -81,7 +94,7 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
                 {/* Price */}
                 <div className="mb-3">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-semibold text-foreground">
+                    <span className="text-2xl font-bold text-foreground">
                       ${watch.price.toLocaleString()}
                     </span>
                     {watch.originalPrice && watch.originalPrice > watch.price && (
@@ -92,12 +105,12 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     {watch.originalPrice && watch.originalPrice > watch.price && (
-                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 rounded-full">
                         Save ${(watch.originalPrice - watch.price).toLocaleString()}
                       </Badge>
                     )}
                     {isBestDeal(watch) && (
-                      <Badge className="text-xs bg-orange-500 text-white font-semibold">
+                      <Badge className="text-xs bg-orange-500 text-white font-semibold rounded-full">
                         🔥 Best Deal
                       </Badge>
                     )}
@@ -115,32 +128,42 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
                       </span>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs rounded-full">
                     {watch.condition}
                   </Badge>
                 </div>
                 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
+                  <Button 
+                    asChild
+                    className="flex-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                  >
+                    <a 
+                      href={getMarketplaceUrl(watch)} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2"
+                    >
+                      Buy Now
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </Button>
                   <Link 
                     to={`/watch/${watch.reference}`} 
-                    className="flex-1"
                   >
-                    <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white">
-                      View Details
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="rounded-lg hover:bg-slate-50 border-slate-300"
+                    >
+                      <Eye className="h-4 w-4" />
                     </Button>
                   </Link>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleWatchlist(watch.id)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
                 </div>
                 
-                <p className="text-xs text-muted-foreground mt-2">
-                  Listed on {watch.marketplace}
+                <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
+                  <span>Available on {watch.marketplace}</span>
                 </p>
               </div>
             </div>
