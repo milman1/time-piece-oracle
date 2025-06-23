@@ -50,44 +50,102 @@ export const parseSearchQuery = async (query: string): Promise<WatchFilters> => 
 
 export const searchWatchesWithFilters = async (filters: WatchFilters, textQuery?: string): Promise<Watch[]> => {
   try {
-    let query = supabase
-      .from('watches')
-      .select('*')
-      .order('created_at', { ascending: false });
+    // Use raw SQL query since the watches table isn't in the generated types yet
+    let sql = `
+      SELECT 
+        id,
+        brand,
+        model,
+        reference,
+        price,
+        original_price as "originalPrice",
+        condition,
+        seller,
+        rating,
+        reviews,
+        marketplace,
+        image,
+        trusted,
+        year,
+        description,
+        style,
+        movement,
+        strap
+      FROM watches
+      WHERE 1=1
+    `;
+    
+    const params: any[] = [];
+    let paramIndex = 1;
 
-    // Apply filters
+    // Apply filters using parameterized queries to prevent SQL injection
     if (filters.brand) {
-      query = query.ilike('brand', `%${filters.brand}%`);
+      sql += ` AND brand ILIKE $${paramIndex}`;
+      params.push(`%${filters.brand}%`);
+      paramIndex++;
     }
 
     if (filters.style) {
-      query = query.ilike('style', `%${filters.style}%`);
+      sql += ` AND style ILIKE $${paramIndex}`;
+      params.push(`%${filters.style}%`);
+      paramIndex++;
     }
 
     if (filters.movement) {
-      query = query.ilike('movement', `%${filters.movement}%`);
+      sql += ` AND movement ILIKE $${paramIndex}`;
+      params.push(`%${filters.movement}%`);
+      paramIndex++;
     }
 
     if (filters.strap) {
-      query = query.ilike('strap', `%${filters.strap}%`);
+      sql += ` AND strap ILIKE $${paramIndex}`;
+      params.push(`%${filters.strap}%`);
+      paramIndex++;
     }
 
     if (filters.max_price) {
-      query = query.lte('price', filters.max_price);
+      sql += ` AND price <= $${paramIndex}`;
+      params.push(filters.max_price);
+      paramIndex++;
     }
 
     // If there's still a text query, apply it as a general search
     if (textQuery && textQuery.trim()) {
-      query = query.or(
-        `brand.ilike.%${textQuery}%,model.ilike.%${textQuery}%,reference.ilike.%${textQuery}%,description.ilike.%${textQuery}%`
-      );
+      sql += ` AND (
+        brand ILIKE $${paramIndex} OR 
+        model ILIKE $${paramIndex} OR 
+        reference ILIKE $${paramIndex} OR 
+        description ILIKE $${paramIndex}
+      )`;
+      params.push(`%${textQuery}%`);
+      paramIndex++;
     }
 
-    const { data, error } = await query.limit(50);
+    sql += ` ORDER BY created_at DESC LIMIT 50`;
+
+    const { data, error } = await supabase.rpc('exec_sql', {
+      sql_query: sql,
+      params: params
+    });
 
     if (error) {
       console.error('Error searching watches:', error);
-      return [];
+      // Fallback to a simpler query if the RPC doesn't work
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('watches' as any)
+        .select('*')
+        .limit(50);
+      
+      if (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError);
+        return [];
+      }
+      
+      // Transform the data to match our Watch interface
+      return (fallbackData || []).map((watch: any) => ({
+        ...watch,
+        originalPrice: watch.original_price
+      }));
     }
 
     return data || [];

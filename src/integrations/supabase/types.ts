@@ -42,6 +42,75 @@ export type Database = {
         }
         Relationships: []
       }
+      watches: {
+        Row: {
+          brand: string
+          condition: string
+          created_at: string
+          description: string | null
+          id: number
+          image: string | null
+          marketplace: string
+          model: string
+          movement: string | null
+          original_price: number | null
+          price: number
+          rating: number | null
+          reference: string
+          reviews: number | null
+          seller: string
+          strap: string | null
+          style: string | null
+          trusted: boolean | null
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          brand: string
+          condition: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          image?: string | null
+          marketplace: string
+          model: string
+          movement?: string | null
+          original_price?: number | null
+          price: number
+          rating?: number | null
+          reference: string
+          reviews?: number | null
+          seller: string
+          strap?: string | null
+          style?: string | null
+          trusted?: boolean | null
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          brand?: string
+          condition?: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          image?: string | null
+          marketplace?: string
+          model?: string
+          movement?: string | null
+          original_price?: number | null
+          price?: number
+          rating?: number | null
+          reference?: string
+          reviews?: number | null
+          seller?: string
+          strap?: string | null
+          style?: string | null
+          trusted?: boolean | null
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
