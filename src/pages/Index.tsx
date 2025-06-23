@@ -11,17 +11,43 @@ import { TrustSection } from '@/components/TrustSection';
 import { Header } from '@/components/Header';
 import { Logo } from '@/components/Logo';
 import { searchWatches, getAllWatches, Watch } from '@/services/watchService';
+import { searchWatchesWithFilters, WatchFilters } from '@/services/searchService';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [searchResults, setSearchResults] = useState<Watch[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string, filters?: WatchFilters) => {
     setSearchQuery(query);
-    const results = searchWatches(query);
-    setSearchResults(results);
-    setShowResults(true);
+    setIsSearching(true);
+
+    try {
+      let results: Watch[] = [];
+
+      if (filters && Object.keys(filters).length > 0) {
+        // Use AI-powered search with filters
+        results = await searchWatchesWithFilters(filters, query);
+      } else if (query.trim()) {
+        // Fallback to basic text search
+        results = searchWatches(query);
+      } else {
+        // Show all watches if no query
+        results = getAllWatches();
+      }
+
+      setSearchResults(results);
+      setShowResults(true);
+    } catch (error) {
+      console.error('Search error:', error);
+      // Fallback to basic search
+      const results = searchWatches(query);
+      setSearchResults(results);
+      setShowResults(true);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   // Show popular watches initially
@@ -57,7 +83,7 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              <span>Real-time Pricing</span>
+              <span>AI-Powered Search</span>
             </div>
           </div>
         </div>
@@ -69,13 +95,25 @@ const Index = () => {
           <div className="max-w-6xl mx-auto">
             <div className="mb-8">
               <h2 className="text-xl md:text-2xl font-medium mb-2">
-                Search Results for "{searchQuery}"
+                {isSearching ? 'Searching...' : `Search Results for "${searchQuery}"`}
               </h2>
               <p className="text-muted-foreground">
-                Found {searchResults.length} listings from verified marketplaces
+                {isSearching 
+                  ? 'AI is analyzing your search...' 
+                  : `Found ${searchResults.length} listings from verified marketplaces`
+                }
               </p>
             </div>
-            <WatchGrid watches={searchResults} />
+            {isSearching ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <Search className="h-8 w-8 text-slate-400" />
+                </div>
+                <p className="text-muted-foreground">AI is parsing your search query...</p>
+              </div>
+            ) : (
+              <WatchGrid watches={searchResults} />
+            )}
           </div>
         </section>
       ) : (

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +11,11 @@ import {
   SelectItem,
   SelectValue,
 } from '@/components/ui/select';
+import { parseSearchQuery, WatchFilters } from '@/services/searchService';
+import { useToast } from '@/hooks/use-toast';
 
 interface SearchSectionProps {
-  onSearch: (query: string) => void;
+  onSearch: (query: string, filters?: WatchFilters) => void;
 }
 
 const BRAND_OPTIONS = [
@@ -34,15 +36,55 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
   const [showFilters, setShowFilters] = useState(false);
   const [boxAndPapers, setBoxAndPapers] = useState(false);
   const [brand, setBrand] = useState('Any Brand');
+  const [isParsingSearch, setIsParsingSearch] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState<WatchFilters>({});
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // You could integrate the selected filters in onSearch as needed
-    onSearch(query);
+    
+    if (!query.trim()) {
+      onSearch('');
+      return;
+    }
+
+    setIsParsingSearch(true);
+    
+    try {
+      // Use AI to parse the search query into structured filters
+      const parsedFilters = await parseSearchQuery(query);
+      setAppliedFilters(parsedFilters);
+      
+      // Show user what filters were detected
+      if (Object.keys(parsedFilters).length > 0) {
+        const filterSummary = Object.entries(parsedFilters)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(', ');
+        
+        toast({
+          title: "AI Search Applied",
+          description: `Detected filters: ${filterSummary}`,
+        });
+      }
+      
+      onSearch(query, parsedFilters);
+    } catch (error) {
+      console.error('Error parsing search:', error);
+      // Fallback to regular search
+      onSearch(query);
+      toast({
+        title: "Search Applied",
+        description: "Using basic text search",
+        variant: "default",
+      });
+    } finally {
+      setIsParsingSearch(false);
+    }
   };
 
   const handleClear = () => {
     setQuery('');
+    setAppliedFilters({});
     onSearch('');
   };
 
@@ -62,7 +104,7 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Enter brand, model, or reference number..."
+            placeholder="Try: 'Rolex diving watch under $10k' or 'automatic chronograph'"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="pl-12 pr-32 py-6 text-lg border-2 border-border focus:border-slate-400 rounded-xl shadow-sm"
@@ -79,12 +121,48 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
           )}
           <Button 
             type="submit"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-slate-900 hover:bg-slate-800 text-white px-6"
+            disabled={isParsingSearch}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-slate-900 hover:bg-slate-800 text-white px-6 flex items-center gap-2"
           >
-            Search
+            {isParsingSearch ? (
+              <>
+                <Sparkles className="h-4 w-4 animate-pulse" />
+                Parsing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                AI Search
+              </>
+            )}
           </Button>
         </div>
       </form>
+
+      {/* Applied AI Filters Display */}
+      {Object.keys(appliedFilters).length > 0 && (
+        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-800">AI-Detected Filters:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(appliedFilters).map(([key, value]) => (
+              <Badge key={key} variant="secondary" className="bg-blue-100 text-blue-800">
+                {key}: {value}
+              </Badge>
+            ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAppliedFilters({})}
+              className="h-6 px-2 text-blue-600 hover:text-blue-800"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="mb-6">
@@ -94,7 +172,7 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
           className="mb-4 border-2"
         >
           <Filter className="h-4 w-4 mr-2" />
-          Filters
+          Manual Filters
         </Button>
         
         {showFilters && (
@@ -155,7 +233,7 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
 
       {/* Popular Searches */}
       <div className="text-center">
-        <p className="text-sm text-muted-foreground mb-3">Popular searches:</p>
+        <p className="text-sm text-muted-foreground mb-3">Try these AI-powered searches:</p>
         <div className="flex flex-wrap justify-center gap-2">
           {popularSearches.map((search) => (
             <Badge
@@ -164,7 +242,7 @@ export const SearchSection = ({ onSearch }: SearchSectionProps) => {
               className="cursor-pointer hover:bg-slate-200 transition-colors"
               onClick={() => {
                 setQuery(search);
-                onSearch(search);
+                handleSubmit(new Event('submit') as any);
               }}
             >
               {search}
