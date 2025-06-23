@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Star, ShieldCheck, Eye, Heart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +16,12 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
   const handleWatchlist = (watchId: number) => {
     console.log(`Added watch ${watchId} to watchlist`);
     // This would integrate with backend later
+  };
+
+  const isBestDeal = (watch: Watch) => {
+    if (!watch.avgPrice) return false;
+    const discountPercentage = ((watch.avgPrice - watch.price) / watch.avgPrice) * 100;
+    return discountPercentage >= 15;
   };
 
   if (watches.length === 0) {
@@ -83,11 +90,18 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
                       </span>
                     )}
                   </div>
-                  {watch.originalPrice && watch.originalPrice > watch.price && (
-                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                      Save ${(watch.originalPrice - watch.price).toLocaleString()}
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    {watch.originalPrice && watch.originalPrice > watch.price && (
+                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                        Save ${(watch.originalPrice - watch.price).toLocaleString()}
+                      </Badge>
+                    )}
+                    {isBestDeal(watch) && (
+                      <Badge className="text-xs bg-orange-500 text-white font-semibold">
+                        🔥 Best Deal
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Seller Info */}

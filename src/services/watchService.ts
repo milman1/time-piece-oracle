@@ -1,6 +1,4 @@
 
-import { getWatchImage } from './imageService';
-
 export interface Watch {
   id: number;
   brand: string;
@@ -13,169 +11,202 @@ export interface Watch {
   rating: number;
   reviews: number;
   marketplace: string;
-  image: string;
+  image?: string;
   trusted: boolean;
-  year: number;
+  year?: number;
   description?: string;
+  style?: string;
+  movement?: string;
+  strap?: string;
+  avgPrice?: number; // Add avgPrice field
 }
 
 const mockWatches: Watch[] = [
   {
     id: 1,
     brand: 'Rolex',
-    model: 'Submariner Date',
-    reference: '126610LN',
-    price: 12950,
-    originalPrice: 13500,
+    model: 'Submariner',
+    reference: 'REF-116610LN',
+    price: 8500,
+    originalPrice: 9000,
     condition: 'Excellent',
     seller: 'Crown & Caliber',
-    rating: 4.9,
-    reviews: 2847,
-    marketplace: 'WatchBox',
-    image: getWatchImage('126610LN').url,
+    rating: 4.8,
+    reviews: 156,
+    marketplace: 'Crown & Caliber',
+    image: '/placeholder.svg',
     trusted: true,
-    year: 2022,
-    description: 'Black dial and bezel, steel case and bracelet'
+    year: 2018,
+    description: 'Classic black dial Submariner in excellent condition',
+    style: 'diver',
+    movement: 'automatic',
+    strap: 'metal',
+    avgPrice: 9500
   },
   {
     id: 2,
     brand: 'Omega',
     model: 'Speedmaster Professional',
-    reference: '310.30.42.50.01.001',
-    price: 4250,
-    originalPrice: 4850,
+    reference: 'REF-311.30.42.30.01.005',
+    price: 3200,
     condition: 'Very Good',
     seller: 'Hodinkee Shop',
-    rating: 4.8,
-    reviews: 1923,
-    marketplace: 'Chrono24',
-    image: getWatchImage('310.30.42.50.01.001').url,
+    rating: 4.9,
+    reviews: 89,
+    marketplace: 'Hodinkee Shop',
+    image: '/placeholder.svg',
     trusted: true,
-    year: 2021,
-    description: 'Moonwatch with hesalite crystal'
+    year: 2019,
+    description: 'Moonwatch with hesalite crystal',
+    style: 'chronograph',
+    movement: 'manual',
+    strap: 'metal',
+    avgPrice: 3800
   },
   {
     id: 3,
-    brand: 'Tudor',
-    model: 'Black Bay 58',
-    reference: '79030N',
-    price: 2890,
-    originalPrice: 3200,
-    condition: 'New',
+    brand: 'Patek Philippe',
+    model: 'Nautilus',
+    reference: 'REF-5711/1A-010',
+    price: 55000,
+    condition: 'Unworn',
     seller: 'Tourneau',
-    rating: 4.7,
-    reviews: 756,
-    marketplace: 'eBay',
-    image: getWatchImage('79030N').url,
+    rating: 5.0,
+    reviews: 23,
+    marketplace: 'Tourneau',
+    image: '/placeholder.svg',
     trusted: true,
-    year: 2023,
-    description: 'Navy blue dial and bezel'
+    year: 2021,
+    description: 'Blue dial steel Nautilus, discontinued model',
+    style: 'sport',
+    movement: 'automatic',
+    strap: 'metal',
+    avgPrice: 60000
   },
   {
     id: 4,
-    brand: 'Cartier',
-    model: 'Santos Medium',
-    reference: 'WSSA0029',
-    price: 5650,
-    originalPrice: 6100,
+    brand: 'Audemars Piguet',
+    model: 'Royal Oak',
+    reference: 'REF-15400ST.OO.1220ST.03',
+    price: 18500,
+    originalPrice: 20000,
     condition: 'Excellent',
-    seller: 'Bob\'s Watches',
-    rating: 4.9,
-    reviews: 3421,
-    marketplace: 'WatchStation',
-    image: getWatchImage('WSSA0029').url,
+    seller: 'Bobs Watches',
+    rating: 4.7,
+    reviews: 67,
+    marketplace: 'Bobs Watches',
+    image: '/placeholder.svg',
     trusted: true,
-    year: 2022,
-    description: 'Steel case with blue leather strap'
+    year: 2017,
+    description: 'White dial Royal Oak 41mm',
+    style: 'sport',
+    movement: 'automatic',
+    strap: 'metal',
+    avgPrice: 22000
   },
   {
     id: 5,
-    brand: 'Patek Philippe',
-    model: 'Nautilus',
-    reference: '5711/1A-010',
-    price: 89500,
-    originalPrice: 95000,
-    condition: 'Excellent',
-    seller: 'Antiquorum',
-    rating: 4.9,
-    reviews: 892,
-    marketplace: 'Chrono24',
-    image: getWatchImage('5711/1A-010').url,
+    brand: 'Cartier',
+    model: 'Santos',
+    reference: 'REF-WSSA0009',
+    price: 4800,
+    condition: 'Very Good',
+    seller: 'WatchStation',
+    rating: 4.6,
+    reviews: 34,
+    marketplace: 'WatchStation',
+    image: '/placeholder.svg',
     trusted: true,
     year: 2020,
-    description: 'Blue dial, discontinued model'
+    description: 'Medium steel Santos with leather strap',
+    style: 'dress',
+    movement: 'automatic',
+    strap: 'leather',
+    avgPrice: 5200
   },
   {
     id: 6,
-    brand: 'Audemars Piguet',
-    model: 'Royal Oak',
-    reference: '15400ST.OO.1220ST.01',
-    price: 32500,
-    originalPrice: 35000,
-    condition: 'Very Good',
-    seller: 'Wristcheck',
-    rating: 4.8,
-    reviews: 1247,
-    marketplace: 'WatchBox',
-    image: getWatchImage('15400ST.OO.1220ST.01').url,
-    trusted: true,
-    year: 2019,
-    description: 'Black tapisserie dial, 41mm'
+    brand: 'Tag Heuer',
+    model: 'Monaco',
+    reference: 'REF-CAW2111.FC6183',
+    price: 2100,
+    originalPrice: 2400,
+    condition: 'Good',
+    seller: 'eBay',
+    rating: 4.2,
+    reviews: 12,
+    marketplace: 'eBay',
+    image: '/placeholder.svg',
+    trusted: false,
+    year: 2016,
+    description: 'Blue dial Monaco chronograph',
+    style: 'chronograph',
+    movement: 'automatic',
+    strap: 'leather',
+    avgPrice: 2800
   },
   {
     id: 7,
-    brand: 'Rolex',
-    model: 'GMT Master II',
-    reference: '126710BLNR',
-    price: 14750,
-    originalPrice: 15200,
-    condition: 'New',
-    seller: 'Crown & Caliber',
+    brand: 'Grand Seiko',
+    model: 'Snowflake',
+    reference: 'REF-SBGA211',
+    price: 3800,
+    condition: 'Excellent',
+    seller: 'Seiko Authorized Dealer',
     rating: 4.9,
-    reviews: 2847,
-    marketplace: 'Chrono24',
-    image: getWatchImage('126710BLNR').url,
+    reviews: 45,
+    marketplace: 'Seiko',
+    image: '/placeholder.svg',
     trusted: true,
-    year: 2023,
-    description: 'Batman bezel, Jubilee bracelet'
+    year: 2020,
+    description: 'Spring Drive with power reserve indicator',
+    style: 'dress',
+    movement: 'automatic',
+    strap: 'leather',
+    avgPrice: 4200
   },
   {
     id: 8,
-    brand: 'Omega',
-    model: 'Seamaster Planet Ocean',
-    reference: '215.30.44.21.01.001',
-    price: 3450,
-    originalPrice: 3800,
-    condition: 'Excellent',
-    seller: 'Jomashop',
-    rating: 4.6,
-    reviews: 1523,
-    marketplace: 'eBay',
-    image: getWatchImage('215.30.44.21.01.001').url,
+    brand: 'Breitling',
+    model: 'Navitimer',
+    reference: 'REF-A23322121B2X1',
+    price: 3500,
+    condition: 'Very Good',
+    seller: 'Chrono24',
+    rating: 4.5,
+    reviews: 78,
+    marketplace: 'Chrono24',
+    image: '/placeholder.svg',
     trusted: true,
-    year: 2021,
-    description: 'Black dial and bezel, 43.5mm'
+    year: 2018,
+    description: 'Blue dial pilot chronograph',
+    style: 'pilot',
+    movement: 'automatic',
+    strap: 'leather',
+    avgPrice: 3900
   }
 ];
 
+export const getAllWatches = (): Watch[] => {
+  return mockWatches;
+};
+
 export const searchWatches = (query: string): Watch[] => {
   if (!query.trim()) {
-    return mockWatches;
+    return getAllWatches();
   }
-
+  
   const searchTerm = query.toLowerCase();
   return mockWatches.filter(watch => 
     watch.brand.toLowerCase().includes(searchTerm) ||
     watch.model.toLowerCase().includes(searchTerm) ||
     watch.reference.toLowerCase().includes(searchTerm) ||
-    `${watch.brand} ${watch.model}`.toLowerCase().includes(searchTerm)
+    watch.style?.toLowerCase().includes(searchTerm) ||
+    watch.movement?.toLowerCase().includes(searchTerm) ||
+    watch.description?.toLowerCase().includes(searchTerm)
   );
 };
 
-export const getWatchById = (id: number): Watch | undefined => {
-  return mockWatches.find(watch => watch.id === id);
-};
-
-export const getAllWatches = (): Watch[] => {
-  return mockWatches;
+export const getWatchByReference = (reference: string): Watch | undefined => {
+  return mockWatches.find(watch => watch.reference === reference);
 };

@@ -44,6 +44,7 @@ export type Database = {
       }
       watches: {
         Row: {
+          avg_price: number | null
           brand: string
           condition: string
           created_at: string
@@ -66,6 +67,7 @@ export type Database = {
           year: number | null
         }
         Insert: {
+          avg_price?: number | null
           brand: string
           condition: string
           created_at?: string
@@ -88,6 +90,7 @@ export type Database = {
           year?: number | null
         }
         Update: {
+          avg_price?: number | null
           brand?: string
           condition?: string
           created_at?: string
