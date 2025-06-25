@@ -34,7 +34,19 @@ export const TrendingWatches = () => {
           return;
         }
 
-        setTrendingPosts(data || []);
+        // Transform data to match our interface with proper type casting
+        const transformedData: SocialPost[] = (data || []).map(post => ({
+          id: post.id,
+          platform: post.platform as 'instagram' | 'tiktok',
+          thumbnail: post.thumbnail,
+          caption: post.caption,
+          author: post.author,
+          url: post.url,
+          likes: post.likes,
+          views: post.views,
+        }));
+
+        setTrendingPosts(transformedData);
       } catch (error) {
         console.error('Error fetching social posts:', error);
       } finally {
@@ -90,62 +102,68 @@ export const TrendingWatches = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {trendingPosts.map((post) => (
             <Card key={post.id} className="group hover:shadow-xl transition-all duration-300 border border-slate-200 hover:border-slate-300 rounded-xl shadow-md overflow-hidden">
               <div className="relative">
                 <img
                   src={post.thumbnail}
                   alt="Watch post thumbnail"
-                  className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-48 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 
                 {/* Platform badge */}
-                <div className="absolute top-3 left-3">
+                <div className="absolute top-2 md:top-3 left-2 md:left-3">
                   <Badge className={`${
                     post.platform === 'instagram' 
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500' 
                       : 'bg-black'
-                  } text-white font-medium rounded-full px-3 py-1`}>
+                  } text-white font-medium rounded-full px-2 md:px-3 py-1 text-xs`}>
                     {post.platform === 'instagram' ? (
-                      <Instagram className="h-3 w-3 mr-1" />
+                      <Instagram className="h-2 w-2 md:h-3 md:w-3 mr-1" />
                     ) : (
-                      <Play className="h-3 w-3 mr-1" />
+                      <Play className="h-2 w-2 md:h-3 md:w-3 mr-1" />
                     )}
-                    {post.platform === 'instagram' ? 'Instagram' : 'TikTok'}
+                    <span className="hidden sm:inline">
+                      {post.platform === 'instagram' ? 'Instagram' : 'TikTok'}
+                    </span>
                   </Badge>
                 </div>
 
                 {/* Engagement stats */}
-                <div className="absolute top-3 right-3">
+                <div className="absolute top-2 md:top-3 right-2 md:right-3">
                   <Badge variant="secondary" className="bg-black/70 text-white border-0 rounded-full px-2 py-1 text-xs">
-                    {post.likes ? `${formatNumber(post.likes)} likes` : `${formatNumber(post.views!)} views`}
+                    {post.likes ? `${formatNumber(post.likes)}` : `${formatNumber(post.views!)}`}
+                    <span className="hidden sm:inline ml-1">
+                      {post.likes ? 'likes' : 'views'}
+                    </span>
                   </Badge>
                 </div>
 
                 {/* Play button overlay for TikTok */}
                 {post.platform === 'tiktok' && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Play className="h-8 w-8 text-slate-900 ml-1" fill="currentColor" />
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Play className="h-6 w-6 md:h-8 md:w-8 text-slate-900 ml-1" fill="currentColor" />
                     </div>
                   </div>
                 )}
               </div>
 
-              <CardContent className="p-6">
+              <CardContent className="p-4 md:p-6">
                 <div className="mb-4">
-                  <p className="text-sm text-muted-foreground font-medium mb-2">
+                  <p className="text-xs md:text-sm text-muted-foreground font-medium mb-2">
                     {post.author}
                   </p>
-                  <p className="text-foreground leading-relaxed">
-                    {truncateCaption(post.caption)}
+                  <p className="text-sm md:text-base text-foreground leading-relaxed line-clamp-3">
+                    {truncateCaption(post.caption, 80)}
                   </p>
                 </div>
 
                 <Button 
                   asChild
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                  size="sm"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-xs md:text-sm"
                 >
                   <a 
                     href={post.url} 
@@ -153,8 +171,9 @@ export const TrendingWatches = () => {
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2"
                   >
-                    View Original Post
-                    <ExternalLink className="h-4 w-4" />
+                    <span className="hidden sm:inline">View Original Post</span>
+                    <span className="sm:hidden">View</span>
+                    <ExternalLink className="h-3 w-3 md:h-4 md:w-4" />
                   </a>
                 </Button>
               </CardContent>
@@ -167,7 +186,7 @@ export const TrendingWatches = () => {
           <p className="text-muted-foreground mb-4">
             Follow the latest watch trends and join the conversation
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button variant="outline" className="rounded-lg">
               Follow on Instagram
             </Button>
