@@ -9,6 +9,7 @@ import { HeroSearch } from '@/components/HeroSearch';
 import { WatchGrid } from '@/components/WatchGrid';
 import { WatchRecommendations } from '@/components/WatchRecommendations';
 import { TrustSection } from '@/components/TrustSection';
+import { TrendingWatches } from '@/components/TrendingWatches';
 import { Header } from '@/components/Header';
 import { Logo } from '@/components/Logo';
 import { searchWatches, getAllWatches, Watch } from '@/services/watchService';
@@ -165,6 +166,9 @@ const Index = () => {
           </div>
         </section>
       )}
+
+      {/* New Trending in Watches Section */}
+      <TrendingWatches />
 
       {/* SEO Content Sections */}
       <section className="py-12 md:py-16 px-4 bg-slate-50">
