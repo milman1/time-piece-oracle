@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Instagram, Play } from 'lucide-react';
+import { ExternalLink, Instagram, Play, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { InfluencerAvatar } from '@/components/InfluencerAvatar';
 import { supabase } from '@/integrations/supabase/client';
 
 interface SocialPost {
@@ -17,34 +17,64 @@ interface SocialPost {
   views?: number;
 }
 
+interface Influencer {
+  id: string;
+  handle: string;
+  profile_url: string;
+  description: string;
+  image_url?: string | null;
+  platform: string;
+}
+
+interface EnrichedSocialPost extends SocialPost {
+  influencer?: Influencer;
+}
+
 export const TrendingWatches = () => {
-  const [trendingPosts, setTrendingPosts] = useState<SocialPost[]>([]);
+  const [trendingPosts, setTrendingPosts] = useState<EnrichedSocialPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTrendingPosts = async () => {
       try {
-        const { data, error } = await supabase
+        // Fetch social posts
+        const { data: postsData, error: postsError } = await supabase
           .from('social_posts')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (error) {
-          console.error('Error fetching social posts:', error);
+        if (postsError) {
+          console.error('Error fetching social posts:', postsError);
           return;
         }
 
-        // Transform data to match our interface with proper type casting
-        const transformedData: SocialPost[] = (data || []).map(post => ({
-          id: post.id,
-          platform: post.platform as 'instagram' | 'tiktok',
-          thumbnail: post.thumbnail,
-          caption: post.caption,
-          author: post.author,
-          url: post.url,
-          likes: post.likes,
-          views: post.views,
-        }));
+        // Fetch influencers
+        const { data: influencersData, error: influencersError } = await supabase
+          .from('influencers')
+          .select('*');
+
+        if (influencersError) {
+          console.error('Error fetching influencers:', influencersError);
+        }
+
+        // Transform and enrich data
+        const transformedData: EnrichedSocialPost[] = (postsData || []).map(post => {
+          const matchingInfluencer = influencersData?.find(
+            influencer => influencer.handle === post.author
+          );
+
+          return {
+            id: post.id,
+            platform: post.platform as 'instagram' | 'tiktok',
+            thumbnail: post.thumbnail,
+            caption: post.caption,
+            author: post.author,
+            url: post.url,
+            likes: post.likes,
+            views: post.views,
+            influencer: matchingInfluencer || undefined,
+          };
+        });
 
         setTrendingPosts(transformedData);
       } catch (error) {
@@ -151,31 +181,69 @@ export const TrendingWatches = () => {
               </div>
 
               <CardContent className="p-4 md:p-6">
+                {/* Influencer Profile Section */}
                 <div className="mb-4">
-                  <p className="text-xs md:text-sm text-muted-foreground font-medium mb-2">
-                    {post.author}
-                  </p>
+                  <div className="flex items-center gap-3 mb-3">
+                    <InfluencerAvatar 
+                      imageUrl={post.influencer?.image_url} 
+                      handle={post.author}
+                      size="sm"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {post.author}
+                      </p>
+                      {post.influencer?.description && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {post.influencer.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
                   <p className="text-sm md:text-base text-foreground leading-relaxed line-clamp-3">
                     {truncateCaption(post.caption, 80)}
                   </p>
                 </div>
 
-                <Button 
-                  asChild
-                  size="sm"
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-xs md:text-sm"
-                >
-                  <a 
-                    href={post.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2"
+                <div className="space-y-2">
+                  <Button 
+                    asChild
+                    size="sm"
+                    className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-xs md:text-sm"
                   >
-                    <span className="hidden sm:inline">View Original Post</span>
-                    <span className="sm:hidden">View</span>
-                    <ExternalLink className="h-3 w-3 md:h-4 md:w-4" />
-                  </a>
-                </Button>
+                    <a 
+                      href={post.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <span className="hidden sm:inline">View Original Post</span>
+                      <span className="sm:hidden">View</span>
+                      <ExternalLink className="h-3 w-3 md:h-4 md:w-4" />
+                    </a>
+                  </Button>
+
+                  {/* View Profile Button */}
+                  {post.influencer?.profile_url && (
+                    <Button 
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="w-full rounded-lg text-xs md:text-sm"
+                    >
+                      <a 
+                        href={post.influencer.profile_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <User className="h-3 w-3 md:h-4 md:w-4" />
+                        <span>View Profile</span>
+                      </a>
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}
