@@ -42,6 +42,45 @@ export type Database = {
         }
         Relationships: []
       }
+      social_posts: {
+        Row: {
+          author: string
+          caption: string
+          created_at: string
+          id: string
+          likes: number | null
+          platform: string
+          thumbnail: string
+          updated_at: string
+          url: string
+          views: number | null
+        }
+        Insert: {
+          author: string
+          caption: string
+          created_at?: string
+          id?: string
+          likes?: number | null
+          platform: string
+          thumbnail: string
+          updated_at?: string
+          url: string
+          views?: number | null
+        }
+        Update: {
+          author?: string
+          caption?: string
+          created_at?: string
+          id?: string
+          likes?: number | null
+          platform?: string
+          thumbnail?: string
+          updated_at?: string
+          url?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
       watches: {
         Row: {
           avg_price: number | null

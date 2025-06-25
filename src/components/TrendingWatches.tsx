@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ExternalLink, Instagram, Play } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SocialPost {
   id: string;
@@ -16,65 +17,34 @@ interface SocialPost {
   views?: number;
 }
 
-// Mock data for trending watch posts
-const trendingPosts: SocialPost[] = [
-  {
-    id: '1',
-    platform: 'instagram',
-    thumbnail: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop',
-    caption: 'Just unboxed this stunning Rolex Submariner! The craftsmanship is absolutely incredible...',
-    author: '@watchcollector',
-    url: 'https://instagram.com/p/example1',
-    likes: 2840
-  },
-  {
-    id: '2',
-    platform: 'tiktok',
-    thumbnail: 'https://images.unsplash.com/photo-1594576461615-a62a20b9cd87?w=400&h=400&fit=crop',
-    caption: 'POV: You finally saved up for your grail watch 🔥 Omega Speedmaster Professional review',
-    author: '@watchreview_tiktok',
-    url: 'https://tiktok.com/@example2',
-    views: 125000
-  },
-  {
-    id: '3',
-    platform: 'instagram',
-    thumbnail: 'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=400&h=400&fit=crop',
-    caption: 'Vintage Seiko finds at the local market! Sometimes the best treasures are hiding in plain sight',
-    author: '@vintage_timepieces',
-    url: 'https://instagram.com/p/example3',
-    likes: 1560
-  },
-  {
-    id: '4',
-    platform: 'tiktok',
-    thumbnail: 'https://images.unsplash.com/photo-1548181080-6d90377cddf9?w=400&h=400&fit=crop',
-    caption: 'Watch collecting mistakes I wish I knew before starting my journey. Save your money!',
-    author: '@watchnewbie',
-    url: 'https://tiktok.com/@example4',
-    views: 89400
-  },
-  {
-    id: '5',
-    platform: 'instagram',
-    thumbnail: 'https://images.unsplash.com/photo-1533139502658-0198f920d8e8?w=400&h=400&fit=crop',
-    caption: 'Tudor Black Bay 58 wrist shot. The perfect daily wear luxury watch that flies under the radar',
-    author: '@dailywrist',
-    url: 'https://instagram.com/p/example5',
-    likes: 3200
-  },
-  {
-    id: '6',
-    platform: 'tiktok',
-    thumbnail: 'https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?w=400&h=400&fit=crop',
-    caption: 'How to spot a fake Rolex in 30 seconds! These tips will save you thousands 💰',
-    author: '@authenticwatches',
-    url: 'https://tiktok.com/@example6',
-    views: 456000
-  }
-];
-
 export const TrendingWatches = () => {
+  const [trendingPosts, setTrendingPosts] = useState<SocialPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrendingPosts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('social_posts')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching social posts:', error);
+          return;
+        }
+
+        setTrendingPosts(data || []);
+      } catch (error) {
+        console.error('Error fetching social posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrendingPosts();
+  }, []);
+
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';
@@ -87,6 +57,26 @@ export const TrendingWatches = () => {
   const truncateCaption = (caption: string, maxLength: number = 120) => {
     return caption.length > maxLength ? caption.substring(0, maxLength) + '...' : caption;
   };
+
+  if (loading) {
+    return (
+      <section className="py-12 md:py-16 px-4 bg-slate-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-light mb-4 text-foreground">
+              Trending in Watches
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Discover the latest watch trends, reviews, and collector insights from social media
+            </p>
+          </div>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Loading trending posts...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-12 md:py-16 px-4 bg-slate-50">
