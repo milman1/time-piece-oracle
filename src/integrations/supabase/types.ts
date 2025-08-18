@@ -119,6 +119,35 @@ export type Database = {
         }
         Relationships: []
       }
+      watch_prices: {
+        Row: {
+          collected_at: string
+          id: number
+          price: number
+          watch_id: number
+        }
+        Insert: {
+          collected_at?: string
+          id?: number
+          price: number
+          watch_id: number
+        }
+        Update: {
+          collected_at?: string
+          id?: number
+          price?: number
+          watch_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_prices_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       watches: {
         Row: {
           avg_price: number | null

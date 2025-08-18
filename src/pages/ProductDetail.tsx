@@ -1,17 +1,25 @@
 
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
 import { Star, ExternalLink, TrendingUp } from 'lucide-react';
+import PriceHistoryChart from '@/components/PriceHistoryChart';
+import { fetchPriceHistory } from '@/services/priceService';
 
 const ProductDetail = () => {
+  const { model } = useParams<{ model: string }>();
   const [sortBy, setSortBy] = useState('price');
+  const [priceRange, setPriceRange] = useState<30 | 90 | 180>(90);
   
   // Mock data for the watch detail page
   const watchName = "Rolex Submariner Date";
   const referenceNumber = "126610LN";
+  const watchId = 1; // This would come from your watch service based on the model param
   
   const listings = [
     {
@@ -50,6 +58,15 @@ const ProductDetail = () => {
     "Tudor Black Bay 58"
   ];
 
+  // Query for price history
+  const { data: pricePoints = [], isFetching: isLoadingPrices } = useQuery({
+    queryKey: ["price-history", { watchId, range: priceRange }],
+    queryFn: () => fetchPriceHistory(watchId, priceRange),
+    enabled: !!watchId,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+
   const sortedListings = [...listings].sort((a, b) => {
     if (sortBy === 'price') return a.price - b.price;
     if (sortBy === 'condition') return b.condition.localeCompare(a.condition);
@@ -59,6 +76,15 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{watchName} ({referenceNumber}) - Compare Best Prices | Hours</title>
+        <meta 
+          name="description" 
+          content={`Find the best prices for ${watchName} ${referenceNumber}. Compare listings across Chrono24, eBay, WatchBox and more trusted dealers. Current lowest price from $${Math.min(...listings.map(l => l.price)).toLocaleString()}.`}
+        />
+        <meta name="keywords" content={`${watchName}, ${referenceNumber}, Rolex watch prices, luxury watch marketplace, authentic Rolex`} />
+        <link rel="canonical" href={`https://www.hours.com/watch/${model}`} />
+      </Helmet>
       <Header />
       
       <main className="py-12 px-4">
@@ -143,6 +169,37 @@ const ProductDetail = () => {
               </Card>
             ))}
           </div>
+
+          {/* Price History Chart */}
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-medium">Price History</CardTitle>
+                <div className="flex gap-2">
+                  {[30, 90, 180].map((days) => (
+                    <Button
+                      key={days}
+                      variant={priceRange === days ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPriceRange(days as 30 | 90 | 180)}
+                      className="text-xs"
+                    >
+                      {days}d
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoadingPrices ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="text-muted-foreground">Loading price history...</div>
+                </div>
+              ) : (
+                <PriceHistoryChart data={pricePoints} />
+              )}
+            </CardContent>
+          </Card>
 
           {/* Related Models */}
           <Card>
