@@ -24,17 +24,12 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
     return discountPercentage >= 15;
   };
 
-  const getMarketplaceUrl = (watch: Watch) => {
-    // Generate marketplace URLs based on the marketplace name
-    const marketplaces: { [key: string]: string } = {
-      'Chrono24': `https://www.chrono24.com/search/index.htm?query=${encodeURIComponent(watch.brand + ' ' + watch.model)}`,
-      'eBay': `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(watch.brand + ' ' + watch.model + ' ' + watch.reference)}`,
-      'WatchBox': `https://www.thewatchbox.com/watches/?search=${encodeURIComponent(watch.brand + ' ' + watch.model)}`,
-      'Crown & Caliber': `https://www.crownandcaliber.com/search?q=${encodeURIComponent(watch.brand + ' ' + watch.model)}`,
-      'Hodinkee Shop': `https://shop.hodinkee.com/search?q=${encodeURIComponent(watch.brand + ' ' + watch.model)}`
-    };
-    
-    return marketplaces[watch.marketplace] || `https://www.google.com/search?q=${encodeURIComponent(watch.brand + ' ' + watch.model + ' ' + watch.reference + ' buy')}`;
+  const getAffiliateUrl = (watch: Watch) => {
+    if (!watch.seller_id) {
+      // Fallback for watches without seller_id
+      return `/go?watch_id=${watch.id}&seller_id=&utm_source=tpo&utm_medium=affiliate&utm_campaign=listing`;
+    }
+    return `/go?watch_id=${watch.id}&seller_id=${watch.seller_id}&utm_source=tpo&utm_medium=affiliate&utm_campaign=listing`;
   };
 
   if (watches.length === 0) {
@@ -139,15 +134,13 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
                     asChild
                     className="flex-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
                   >
-                    <a 
-                      href={getMarketplaceUrl(watch)} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                    <Link 
+                      to={getAffiliateUrl(watch)}
                       className="flex items-center justify-center gap-2"
                     >
                       Buy Now
                       <ExternalLink className="h-4 w-4" />
-                    </a>
+                    </Link>
                   </Button>
                   <Link 
                     to={`/watch/${watch.reference}`} 
@@ -163,7 +156,7 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
                 </div>
                 
                 <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
-                  <span>Available on {watch.marketplace}</span>
+                  <span>Available on {watch.marketplace} • We may earn a commission when you buy through links on our site.</span>
                 </p>
               </div>
             </div>

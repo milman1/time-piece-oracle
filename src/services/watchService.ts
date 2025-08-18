@@ -18,7 +18,9 @@ export interface Watch {
   style?: string;
   movement?: string;
   strap?: string;
-  avgPrice?: number; // Add avgPrice field
+  avgPrice?: number;
+  seller_id?: string;
+  affiliate_url?: string;
 }
 
 const mockWatches: Watch[] = [

@@ -9,6 +9,7 @@ import PriceAlert from "./pages/PriceAlert";
 import ProductDetail from "./pages/ProductDetail";
 import TrustedSellers from "./pages/TrustedSellers";
 import Blog from "./pages/Blog";
+import Go from "./pages/Go";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/watch/:model" element={<ProductDetail />} />
           <Route path="/trusted-sellers" element={<TrustedSellers />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/go" element={<Go />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

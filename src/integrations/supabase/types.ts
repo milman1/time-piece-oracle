@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_clicks: {
+        Row: {
+          clicked_at: string
+          id: string
+          ip_address: unknown | null
+          referrer: string | null
+          seller_id: string | null
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          watch_id: number | null
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          ip_address?: unknown | null
+          referrer?: string | null
+          seller_id?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          watch_id?: number | null
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          ip_address?: unknown | null
+          referrer?: string | null
+          seller_id?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          watch_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_clicks_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_clicks_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       influencers: {
         Row: {
           created_at: string
@@ -77,6 +131,39 @@ export type Database = {
           model?: string
           target_price?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      sellers: {
+        Row: {
+          affiliate_base_url: string | null
+          commission_rate: number | null
+          created_at: string
+          id: string
+          name: string
+          trust_score: number | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          affiliate_base_url?: string | null
+          commission_rate?: number | null
+          created_at?: string
+          id?: string
+          name: string
+          trust_score?: number | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          affiliate_base_url?: string | null
+          commission_rate?: number | null
+          created_at?: string
+          id?: string
+          name?: string
+          trust_score?: number | null
+          updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -150,6 +237,7 @@ export type Database = {
       }
       watches: {
         Row: {
+          affiliate_url: string | null
           avg_price: number | null
           brand: string
           condition: string
@@ -166,6 +254,7 @@ export type Database = {
           reference: string
           reviews: number | null
           seller: string
+          seller_id: string | null
           strap: string | null
           style: string | null
           trusted: boolean | null
@@ -173,6 +262,7 @@ export type Database = {
           year: number | null
         }
         Insert: {
+          affiliate_url?: string | null
           avg_price?: number | null
           brand: string
           condition: string
@@ -189,6 +279,7 @@ export type Database = {
           reference: string
           reviews?: number | null
           seller: string
+          seller_id?: string | null
           strap?: string | null
           style?: string | null
           trusted?: boolean | null
@@ -196,6 +287,7 @@ export type Database = {
           year?: number | null
         }
         Update: {
+          affiliate_url?: string | null
           avg_price?: number | null
           brand?: string
           condition?: string
@@ -212,13 +304,22 @@ export type Database = {
           reference?: string
           reviews?: number | null
           seller?: string
+          seller_id?: string | null
           strap?: string | null
           style?: string | null
           trusted?: boolean | null
           updated_at?: string
           year?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "watches_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

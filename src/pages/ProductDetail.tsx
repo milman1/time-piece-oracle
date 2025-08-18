@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
+import Footer from '@/components/Footer';
 import { Star, ExternalLink, TrendingUp } from 'lucide-react';
 import PriceHistoryChart from '@/components/PriceHistoryChart';
 import { fetchPriceHistory } from '@/services/priceService';
@@ -97,6 +98,9 @@ const ProductDetail = () => {
             <p className="text-lg text-muted-foreground mb-2">
               Search real-time listings for this model across trusted sellers including Chrono24, WatchBox, eBay, and Bob's Watches. Updated daily.
             </p>
+            <p className="text-sm text-muted-foreground mb-2">
+              We may earn a commission when you buy through links on our site.
+            </p>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span>Reference: <strong>{referenceNumber}</strong></span>
               <Badge variant="secondary" className="flex items-center gap-1">
@@ -159,9 +163,15 @@ const ProductDetail = () => {
                     </div>
                     
                     <div className="md:col-span-2 flex justify-end">
-                      <Button variant="outline" className="flex items-center gap-2">
-                        View Listing
-                        <ExternalLink className="h-4 w-4" />
+                      <Button 
+                        asChild
+                        variant="outline" 
+                        className="flex items-center gap-2"
+                      >
+                        <Link to={`/go?watch_id=1&seller_id=${listing.id}&utm_source=tpo&utm_medium=affiliate&utm_campaign=product_detail`}>
+                          View Listing
+                          <ExternalLink className="h-4 w-4" />
+                        </Link>
                       </Button>
                     </div>
                   </div>
@@ -219,6 +229,7 @@ const ProductDetail = () => {
           </Card>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };
