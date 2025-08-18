@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Search, Sparkles, Loader2 } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { parseSearchQuery, WatchFilters } from '@/services/searchService';
@@ -14,11 +15,12 @@ export const HeroSearch = ({ onSearch }: HeroSearchProps) => {
   const [query, setQuery] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  
+  // Debounce the search query to avoid too many API calls
+  const debouncedQuery = useDebounce(query, 500);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!query.trim()) {
+  const handleSearch = useCallback(async (searchQuery: string) => {
+    if (!searchQuery.trim()) {
       onSearch('');
       return;
     }
@@ -27,7 +29,7 @@ export const HeroSearch = ({ onSearch }: HeroSearchProps) => {
     
     try {
       // Use AI to parse the natural language search query
-      const parsedFilters = await parseSearchQuery(query);
+      const parsedFilters = await parseSearchQuery(searchQuery);
       
       // Show user what filters were detected
       if (Object.keys(parsedFilters).length > 0) {
@@ -41,11 +43,11 @@ export const HeroSearch = ({ onSearch }: HeroSearchProps) => {
         });
       }
       
-      onSearch(query, parsedFilters);
+      onSearch(searchQuery, parsedFilters);
     } catch (error) {
       console.error('Error processing search:', error);
       // Fallback to regular search
-      onSearch(query);
+      onSearch(searchQuery);
       toast({
         title: "Search Applied",
         description: "Using basic text search",
@@ -54,6 +56,19 @@ export const HeroSearch = ({ onSearch }: HeroSearchProps) => {
     } finally {
       setIsProcessing(false);
     }
+  }, [onSearch, toast]);
+
+  // Trigger search when debounced query changes
+  React.useEffect(() => {
+    if (debouncedQuery !== query) return; // Only search when debouncing is complete
+    if (debouncedQuery.trim().length >= 3) { // Only search when we have enough characters
+      handleSearch(debouncedQuery);
+    }
+  }, [debouncedQuery, handleSearch, query]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSearch(query);
   };
 
   return (
@@ -101,7 +116,10 @@ export const HeroSearch = ({ onSearch }: HeroSearchProps) => {
           ].map((suggestion) => (
             <button
               key={suggestion}
-              onClick={() => setQuery(suggestion)}
+            onClick={() => {
+              setQuery(suggestion);
+              handleSearch(suggestion);
+            }}
               className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-sm transition-colors border border-slate-200"
             >
               {suggestion}

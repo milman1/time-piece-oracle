@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Search, Filter, ShieldCheck, Star, TrendingUp, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -18,58 +21,50 @@ import { searchWatchesWithFilters, getWatchRecommendations, WatchFilters, WatchR
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
-  const [searchResults, setSearchResults] = useState<Watch[]>([]);
-  const [recommendations, setRecommendations] = useState<WatchRecommendation[]>([]);
   const [lastSearchFilters, setLastSearchFilters] = useState<WatchFilters>({});
-  const [isSearching, setIsSearching] = useState(false);
+  const queryClient = useQueryClient();
 
-  const handleSearch = async (query: string, filters?: WatchFilters) => {
-    setSearchQuery(query);
-    setIsSearching(true);
-    setRecommendations([]); // Clear previous recommendations
+  // Query for search results
+  const { data: searchResults = [], isLoading: isSearching } = useQuery({
+    queryKey: ['searchWatches', searchQuery, lastSearchFilters],
+    queryFn: async () => {
+      if (!searchQuery.trim() && Object.keys(lastSearchFilters).length === 0) {
+        return [];
+      }
 
-    try {
       let results: Watch[] = [];
 
-      if (filters && Object.keys(filters).length > 0) {
-        // Use AI-powered search with filters
-        results = await searchWatchesWithFilters(filters, query);
-        setLastSearchFilters(filters);
-      } else if (query.trim()) {
-        // Fallback to basic text search
-        results = searchWatches(query);
-        setLastSearchFilters({});
+      if (lastSearchFilters && Object.keys(lastSearchFilters).length > 0) {
+        results = await searchWatchesWithFilters(lastSearchFilters, searchQuery);
+      } else if (searchQuery.trim()) {
+        results = searchWatches(searchQuery);
       } else {
-        // Show all watches if no query
         results = getAllWatches();
-        setLastSearchFilters({});
       }
 
-      setSearchResults(results);
-      setShowResults(true);
+      return results;
+    },
+    enabled: showResults,
+    staleTime: 5 * 60 * 1000,
+  });
 
-      // If no results found and we have a search query, get recommendations
-      if (results.length === 0 && query.trim()) {
-        console.log('No results found, getting recommendations...');
-        const recs = await getWatchRecommendations(query, filters || {});
-        setRecommendations(recs);
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-      // Fallback to basic search
-      const results = searchWatches(query);
-      setSearchResults(results);
-      setShowResults(true);
-      
-      // Get recommendations if no results
-      if (results.length === 0 && query.trim()) {
-        const recs = await getWatchRecommendations(query, {});
-        setRecommendations(recs);
-      }
-    } finally {
-      setIsSearching(false);
-    }
-  };
+  // Query for recommendations when no results found
+  const { data: recommendations = [] } = useQuery({
+    queryKey: ['recommendations', searchQuery, lastSearchFilters],
+    queryFn: () => getWatchRecommendations(searchQuery, lastSearchFilters || {}),
+    enabled: showResults && searchResults.length === 0 && searchQuery.trim().length > 0,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const handleSearch = useCallback((query: string, filters?: WatchFilters) => {
+    setSearchQuery(query);
+    setLastSearchFilters(filters || {});
+    setShowResults(true);
+    
+    // Invalidate queries to trigger refetch
+    queryClient.invalidateQueries({ queryKey: ['searchWatches'] });
+    queryClient.invalidateQueries({ queryKey: ['recommendations'] });
+  }, [queryClient]);
 
   const handleSearchRecommendation = (brand: string, model: string) => {
     const newQuery = `${brand} ${model}`;
@@ -81,6 +76,19 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Find the Best Price for Any Luxury Watch | Hours</title>
+        <meta 
+          name="description" 
+          content="Compare luxury watch prices across Chrono24, eBay, WatchBox and more. AI-powered search finds the best deals on Rolex, Omega, Patek Philippe and other premium timepieces from verified sellers worldwide." 
+        />
+        <meta name="keywords" content="luxury watches, watch prices, Rolex, Omega, Patek Philippe, Chrono24, watch marketplace, authentic watches" />
+        <link rel="canonical" href="https://www.hours.com/" />
+        <meta property="og:title" content="Find the Best Price for Any Luxury Watch | Hours" />
+        <meta property="og:description" content="Compare luxury watch prices across multiple marketplaces with AI-powered search. Find the best deals on authentic timepieces from verified sellers." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.hours.com/" />
+      </Helmet>
       <Header />
       
       {/* Hero Section with New Search */}
@@ -220,7 +228,7 @@ const Index = () => {
                 Get notified instantly when your dream watch drops below your target price across all major marketplaces.
               </p>
               <Button variant="outline" asChild>
-                <a href="/price-alert">Set Alert</a>
+                <Link to="/price-alert">Set Alert</Link>
               </Button>
             </Card>
             <Card className="p-6 md:p-8">
