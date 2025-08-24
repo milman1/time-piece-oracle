@@ -97,7 +97,8 @@ const PriceAlert = () => {
             brand: formData.brand.trim(),
             model: formData.model.trim(),
             target_price: parseFloat(formData.targetPrice),
-            email: formData.email.trim()
+            email: formData.email.trim(),
+            user_id: user?.id
           }
         ]);
       

@@ -141,6 +141,7 @@ export type Database = {
           model: string
           target_price: number
           updated_at: string
+          user_id: string
         }
         Insert: {
           brand: string
@@ -151,6 +152,7 @@ export type Database = {
           model: string
           target_price: number
           updated_at?: string
+          user_id: string
         }
         Update: {
           brand?: string
@@ -161,6 +163,7 @@ export type Database = {
           model?: string
           target_price?: number
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
