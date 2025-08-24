@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,8 +8,12 @@ import { Header } from '@/components/Header';
 import { Shield, Mail, Users, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { Helmet } from 'react-helmet-async';
 
 const PriceAlert = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     brand: '',
     model: '',
@@ -19,6 +23,13 @@ const PriceAlert = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Auto-fill email if user is authenticated
+  useEffect(() => {
+    if (user?.email && !formData.email) {
+      setFormData(prev => ({ ...prev, email: user.email }));
+    }
+  }, [user, formData.email]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -131,10 +142,18 @@ const PriceAlert = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <ProtectedRoute>
+      <Helmet>
+        <title>Price Alerts | WatchPrices - Get Notified When Prices Drop</title>
+        <meta name="description" content="Set up price alerts for luxury watches and get notified instantly when your target watch drops in price across major marketplaces." />
+        <meta name="keywords" content="watch price alerts, luxury watch notifications, price tracking, watch deals" />
+        <link rel="canonical" href={`${window.location.origin}/price-alert`} />
+      </Helmet>
       
-      <main className="py-12 md:py-20 px-4">
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        <main className="py-12 md:py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-tight text-foreground mb-4">
             Set a Price Alert for Any Luxury Watch
@@ -194,20 +213,25 @@ const PriceAlert = () => {
                     />
                   </div>
 
-                  <div className="space-y-2 text-left">
-                    <Label htmlFor="email" className="text-base font-medium">Email Address</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="h-12 text-lg"
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
+                   <div className="space-y-2 text-left">
+                     <Label htmlFor="email" className="text-base font-medium">Email Address</Label>
+                     <Input
+                       id="email"
+                       name="email"
+                       type="email"
+                       placeholder="your@email.com"
+                       value={formData.email}
+                       onChange={handleInputChange}
+                       className="h-12 text-lg"
+                       required
+                       disabled={isLoading || !!user?.email}
+                     />
+                     {user?.email && (
+                       <p className="text-sm text-muted-foreground">
+                         Using your account email: {user.email}
+                       </p>
+                     )}
+                   </div>
 
                   <Button 
                     type="submit" 
@@ -269,6 +293,7 @@ const PriceAlert = () => {
         </div>
       </main>
     </div>
+    </ProtectedRoute>
   );
 };
 
