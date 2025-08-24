@@ -68,6 +68,36 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          created_at: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          operation: string
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          operation: string
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          operation?: string
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       influencers: {
         Row: {
           created_at: string
