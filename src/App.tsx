@@ -13,6 +13,7 @@ import TrustedSellers from "./pages/TrustedSellers";
 import Blog from "./pages/Blog";
 import Go from "./pages/Go";
 import Auth from "./pages/Auth";
+import AffiliatePricing from "./pages/AffiliatePricing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/blog" element={<Blog />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/go" element={<Go />} />
+            <Route path="/partners/pricing" element={<AffiliatePricing />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
