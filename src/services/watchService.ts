@@ -1,5 +1,5 @@
 // src/services/watchService.ts
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
 /** Toggle mock vs. live queries */
@@ -71,13 +71,83 @@ type WatchRow = z.infer<typeof watchRow>;
 
 /** ---------- MOCK DATA (kept from your current file) ---------- */
 const mockWatches: Watch[] = [
-  // …(keep your mock objects as-is, but rename originalPrice -> original_price to match type)…
+  {
+    id: 1,
+    brand: "Rolex",
+    model: "Submariner",
+    reference: "126610LN",
+    price: 13500,
+    original_price: 15000,
+    condition: "Excellent",
+    seller: "Crown & Caliber",
+    rating: 4.8,
+    reviews: 1250,
+    marketplace: "Crown & Caliber",
+    image: null,
+    trusted: true,
+    year: 2022,
+    description: "Black dial Submariner in excellent condition",
+    style: "Sport",
+    movement: "Automatic",
+    strap: "Steel Bracelet",
+    avg_price: 14200,
+    seller_id: 1,
+    affiliate_url: null,
+    listing_url: null,
+  },
+  {
+    id: 2,
+    brand: "Omega",
+    model: "Speedmaster Professional",
+    reference: "310.30.42.50.01.001",
+    price: 6200,
+    original_price: 6800,
+    condition: "Very Good",
+    seller: "Hodinkee Shop",
+    rating: 4.9,
+    reviews: 890,
+    marketplace: "Hodinkee Shop",
+    image: null,
+    trusted: true,
+    year: 2021,
+    description: "Moonwatch with hesalite crystal",
+    style: "Sport",
+    movement: "Manual",
+    strap: "Steel Bracelet",
+    avg_price: 6500,
+    seller_id: 2,
+    affiliate_url: null,
+    listing_url: null,
+  },
 ];
 
 /** ---------- Helpers ---------- */
 
 function rowToWatch(r: WatchRow): Watch {
-  return { ...r };
+  return {
+    id: r.id,
+    brand: r.brand,
+    model: r.model,
+    reference: r.reference,
+    price: r.price,
+    original_price: r.original_price,
+    condition: r.condition,
+    seller: r.seller,
+    rating: r.rating,
+    reviews: r.reviews,
+    marketplace: r.marketplace,
+    image: r.image,
+    trusted: r.trusted,
+    year: r.year,
+    description: r.description,
+    style: r.style,
+    movement: r.movement,
+    strap: r.strap,
+    avg_price: r.avg_price,
+    seller_id: r.seller_id,
+    affiliate_url: r.affiliate_url,
+    listing_url: r.listing_url,
+  };
 }
 
 export function buildAffiliateLink(w: Watch) {
@@ -110,7 +180,7 @@ export async function searchWatches(
   filters: WatchFilters = {},
   limit = 30,
   offset = 0
-): Promise[Watch[]] {
+): Promise<Watch[]> {
   if (USE_MOCK) {
     const term = q.trim().toLowerCase();
     let list = [...mockWatches];

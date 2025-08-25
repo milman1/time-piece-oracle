@@ -37,9 +37,9 @@ const Index = () => {
       if (lastSearchFilters && Object.keys(lastSearchFilters).length > 0) {
         results = await searchWatchesWithFilters(lastSearchFilters, searchQuery);
       } else if (searchQuery.trim()) {
-        results = searchWatches(searchQuery);
+        results = await searchWatches(searchQuery);
       } else {
-        results = getAllWatches();
+        results = await getAllWatches();
       }
 
       return results;
@@ -71,8 +71,16 @@ const Index = () => {
     handleSearch(newQuery);
   };
 
-  // Show popular watches initially
-  const popularWatches = getAllWatches().slice(0, 4);
+  // Query for popular watches initially  
+  const { data: popularWatches = [] } = useQuery({
+    queryKey: ['popularWatches'],
+    queryFn: async () => {
+      const watches = await getAllWatches();
+      return watches.slice(0, 4);
+    },
+    enabled: !showResults,
+    staleTime: 10 * 60 * 1000,
+  });
 
   return (
     <div className="min-h-screen bg-background">

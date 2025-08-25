@@ -19,8 +19,8 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
   };
 
   const isBestDeal = (watch: Watch) => {
-    if (!watch.avgPrice) return false;
-    const discountPercentage = ((watch.avgPrice - watch.price) / watch.avgPrice) * 100;
+    if (!watch.avg_price) return false;
+    const discountPercentage = ((watch.avg_price - watch.price) / watch.avg_price) * 100;
     return discountPercentage >= 15;
   };
 
@@ -92,16 +92,16 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
                     <span className="text-2xl font-bold text-foreground">
                       ${watch.price.toLocaleString()}
                     </span>
-                    {watch.originalPrice && watch.originalPrice > watch.price && (
+                    {watch.original_price && watch.original_price > watch.price && (
                       <span className="text-sm text-muted-foreground line-through">
-                        ${watch.originalPrice.toLocaleString()}
+                        ${watch.original_price.toLocaleString()}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    {watch.originalPrice && watch.originalPrice > watch.price && (
+                    {watch.original_price && watch.original_price > watch.price && (
                       <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 rounded-full">
-                        Save ${(watch.originalPrice - watch.price).toLocaleString()}
+                        Save ${(watch.original_price - watch.price).toLocaleString()}
                       </Badge>
                     )}
                     {isBestDeal(watch) && (
