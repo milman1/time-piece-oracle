@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
@@ -8,20 +8,40 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
 import Footer from '@/components/Footer';
+import NotFound from './NotFound';
 import { Star, ExternalLink, TrendingUp } from 'lucide-react';
 import PriceHistoryChart from '@/components/PriceHistoryChart';
 import { fetchPriceHistory } from '@/services/priceService';
+import { getWatchByReference, slugify } from '@/services/watchService';
 
 const ProductDetail = () => {
-  const { model } = useParams<{ model: string }>();
+  const { brand, model, ref } = useParams<{ brand: string; model: string; ref: string }>();
+  const navigate = useNavigate();
   const [sortBy, setSortBy] = useState('price');
   const [priceRange, setPriceRange] = useState<30 | 90 | 180>(90);
   
-  // Mock data for the watch detail page
-  const watchName = "Rolex Submariner Date";
-  const referenceNumber = "126610LN";
-  const watchId = 1; // This would come from your watch service based on the model param
-  
+  // Fetch watch by reference
+  const { data: watch, isLoading, error } = useQuery({
+    queryKey: ['watch', ref],
+    queryFn: () => getWatchByReference(decodeURIComponent(ref!)),
+    enabled: !!ref,
+    retry: false,
+  });
+
+  // Validate URL params match fetched data and redirect to canonical URL if needed
+  useEffect(() => {
+    if (watch && brand && model) {
+      const expectedBrandSlug = slugify(watch.brand);
+      const expectedModelSlug = slugify(watch.model);
+      
+      if (brand !== expectedBrandSlug || model !== expectedModelSlug) {
+        const canonicalPath = `/watch/${expectedBrandSlug}/${expectedModelSlug}/${encodeURIComponent(watch.reference)}`;
+        navigate(canonicalPath, { replace: true });
+      }
+    }
+  }, [watch, brand, model, navigate]);
+
+  // Mock listings data - in production this would come from your watch service
   const listings = [
     {
       id: 1,
@@ -61,9 +81,9 @@ const ProductDetail = () => {
 
   // Query for price history
   const { data: pricePoints = [], isFetching: isLoadingPrices } = useQuery({
-    queryKey: ["price-history", { watchId, range: priceRange }],
-    queryFn: () => fetchPriceHistory(watchId, priceRange),
-    enabled: !!watchId,
+    queryKey: ["price-history", { watchId: watch?.id, range: priceRange }],
+    queryFn: () => fetchPriceHistory(watch!.id, priceRange),
+    enabled: !!watch?.id,
     staleTime: 60_000,
     refetchOnWindowFocus: false,
   });
@@ -75,16 +95,35 @@ const ProductDetail = () => {
     return 0;
   });
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading watch details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !watch) {
+    return <NotFound />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>{watchName} ({referenceNumber}) - Compare Best Prices | Hours</title>
+        <title>{watch.brand} {watch.model} {watch.reference} — Time Piece Oracle</title>
         <meta 
           name="description" 
-          content={`Find the best prices for ${watchName} ${referenceNumber}. Compare listings across Chrono24, eBay, WatchBox and more trusted dealers. Current lowest price from $${Math.min(...listings.map(l => l.price)).toLocaleString()}.`}
+          content={`Live prices, condition and trusted sellers for the ${watch.brand} ${watch.model} (${watch.reference}). Compare across Chrono24, eBay, WatchBox and more.`}
         />
-        <meta name="keywords" content={`${watchName}, ${referenceNumber}, Rolex watch prices, luxury watch marketplace, authentic Rolex`} />
-        <link rel="canonical" href={`https://www.hours.com/watch/${model}`} />
+        <meta name="keywords" content={`${watch.brand} ${watch.model}, ${watch.reference}, ${watch.brand} watch prices, luxury watch marketplace, authentic ${watch.brand}`} />
+        <link rel="canonical" href={`https://www.hours.com/watch/${slugify(watch.brand)}/${slugify(watch.model)}/${encodeURIComponent(watch.reference)}`} />
+        <meta property="og:title" content={`${watch.brand} ${watch.model} ${watch.reference} — Time Piece Oracle`} />
+        <meta property="og:description" content={`Live prices, condition and trusted sellers for the ${watch.brand} ${watch.model} (${watch.reference}). Compare across Chrono24, eBay, WatchBox and more.`} />
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={`https://www.hours.com/watch/${slugify(watch.brand)}/${slugify(watch.model)}/${encodeURIComponent(watch.reference)}`} />
       </Helmet>
       <Header />
       
@@ -93,7 +132,7 @@ const ProductDetail = () => {
           {/* Header Section */}
           <div className="mb-8">
             <h1 className="text-4xl font-light tracking-tight text-foreground mb-4">
-              {watchName} – Compare Best Prices
+              {watch.brand} {watch.model} – Compare Best Prices
             </h1>
             <p className="text-lg text-muted-foreground mb-2">
               Search real-time listings for this model across trusted sellers including Chrono24, WatchBox, eBay, and Bob's Watches. Updated daily.
@@ -102,7 +141,7 @@ const ProductDetail = () => {
               We may earn a commission when you buy through links on our site.
             </p>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>Reference: <strong>{referenceNumber}</strong></span>
+              <span>Reference: <strong>{watch.reference}</strong></span>
               <Badge variant="secondary" className="flex items-center gap-1">
                 <TrendingUp className="h-3 w-3" />
                 {listings.length} listings found
@@ -168,10 +207,13 @@ const ProductDetail = () => {
                         variant="outline" 
                         className="flex items-center gap-2"
                       >
-                        <Link to={`/go?watch_id=1&seller_id=${listing.id}&utm_source=tpo&utm_medium=affiliate&utm_campaign=product_detail`}>
+                        <a 
+                          href={`/go?watch_id=${watch.id}&seller_id=${listing.id}&utm_source=tpo&utm_medium=affiliate&utm_campaign=product_detail`}
+                          className="flex items-center justify-center gap-2"
+                        >
                           View Listing
                           <ExternalLink className="h-4 w-4" />
-                        </Link>
+                        </a>
                       </Button>
                     </div>
                   </div>

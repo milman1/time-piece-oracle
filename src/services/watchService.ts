@@ -123,6 +123,15 @@ const mockWatches: Watch[] = [
 
 /** ---------- Helpers ---------- */
 
+export function slugify(str: string): string {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 function rowToWatch(r: WatchRow): Watch {
   return {
     id: r.id,
