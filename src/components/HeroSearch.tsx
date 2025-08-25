@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Search, Sparkles, Loader2 } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -71,5 +70,94 @@ export const HeroSearch = ({ onSearch }: HeroSearchProps) => {
           duration: 1500,
         });
       } finally {
-        if (myReqId === reqI
+        if (myReqId === reqIdRef.current) setIsProcessing(false);
+      }
+    },
+    [onSearch, toast]
+  );
+
+  // Auto-search on debounce (unless suppressed by a manual submit)
+  useEffect(() => {
+    if (debouncedQuery !== query) return; // ensure debounce settled
+    if (debouncedQuery.trim().length < 3) return;
+
+    if (suppressNextAutoRef.current) {
+      suppressNextAutoRef.current = false;
+      return;
+    }
+    void handleSearch(debouncedQuery);
+  }, [debouncedQuery, handleSearch, query]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void handleSearch(query, { manual: true });
+  };
+
+  const suggestions = [
+    "Luxury diving watch under $15,000",
+    "Vintage dress watch with leather strap",
+    "Swiss automatic chronograph",
+    "Daily wear sports watch",
+  ];
+
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      <form onSubmit={handleSubmit} className="relative" aria-busy={isProcessing}>
+        <label htmlFor="hero-search" className="sr-only">
+          Search watches
+        </label>
+        <div className="relative">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground" />
+          <Input
+            id="hero-search"
+            type="text"
+            placeholder="Describe your perfect watch..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            disabled={isProcessing}
+            className="pl-16 pr-40 py-8 text-xl border-2 border-border focus:border-slate-400 rounded-2xl shadow-lg bg-white/95 backdrop-blur-sm"
+            aria-label="Search watches"
+          />
+          <Button
+            type="submit"
+            disabled={isProcessing || !query.trim()}
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 flex items-center gap-3 text-lg rounded-xl"
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Processing…
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-5 w-5" />
+                AI Search
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+
+      {/* Suggestion chips */}
+      <div className="mt-6 text-center" aria-live="polite">
+        <p className="text-sm text-muted-foreground mb-3">Try these examples:</p>
+        <div className="flex flex-wrap justify-center gap-3">
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              onClick={() => {
+                // Let debounce trigger the search (avoids duplicate manual+auto)
+                setQuery(s);
+              }}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-sm transition-colors border border-slate-200"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
