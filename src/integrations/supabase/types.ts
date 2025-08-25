@@ -194,6 +194,54 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_applications: {
+        Row: {
+          affiliate_id: string | null
+          affiliate_network: string | null
+          business_name: string
+          contact_name: string
+          created_at: string | null
+          email: string
+          id: number
+          marketplaces: string | null
+          monthly_listings: string | null
+          notes: string | null
+          region: string | null
+          status: string | null
+          website: string
+        }
+        Insert: {
+          affiliate_id?: string | null
+          affiliate_network?: string | null
+          business_name: string
+          contact_name: string
+          created_at?: string | null
+          email: string
+          id?: number
+          marketplaces?: string | null
+          monthly_listings?: string | null
+          notes?: string | null
+          region?: string | null
+          status?: string | null
+          website: string
+        }
+        Update: {
+          affiliate_id?: string | null
+          affiliate_network?: string | null
+          business_name?: string
+          contact_name?: string
+          created_at?: string | null
+          email?: string
+          id?: number
+          marketplaces?: string | null
+          monthly_listings?: string | null
+          notes?: string | null
+          region?: string | null
+          status?: string | null
+          website?: string
+        }
+        Relationships: []
+      }
       sellers: {
         Row: {
           affiliate_base_url: string | null

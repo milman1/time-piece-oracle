@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const schema = z.object({
   businessName: z.string().min(2),
@@ -31,14 +33,29 @@ export default function AffiliatePricing() {
   const { register, handleSubmit, formState: { errors, isSubmitting } , reset} = useForm<AppForm>({ resolver: zodResolver(schema) });
 
   async function onSubmit(values: AppForm) {
-    // TODO: wire this to Supabase (seller_applications table) or your form backend
-    // Example:
-    // const { error } = await supabase.from("seller_applications").insert({ ...values, source: "pricing" });
-    // if (error) throw error;
-    console.log("Seller application:", values);
-    setOpen(false);
-    reset();
-    alert("Thanks! We received your application. We'll be in touch shortly.");
+    try {
+      const { error } = await supabase.from("seller_applications").insert({
+        business_name: values.businessName,
+        website: values.website,
+        contact_name: values.contactName,
+        email: values.email,
+        marketplaces: values.marketplaces || null,
+        region: values.region || null,
+        monthly_listings: values.monthlyListings || null,
+        affiliate_network: values.affiliateNetwork || null,
+        affiliate_id: values.affiliateId || null,
+        notes: values.notes || null,
+      });
+      
+      if (error) throw error;
+      
+      setOpen(false);
+      reset();
+      toast.success("Thanks! We received your application. We'll be in touch shortly.");
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      toast.error("Failed to submit application. Please try again.");
+    }
   }
 
   return (
