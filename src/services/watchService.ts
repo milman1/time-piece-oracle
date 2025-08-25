@@ -1,214 +1,178 @@
+// src/services/watchService.ts
+import { supabase } from "@/lib/supabase";
+import { z } from "zod";
 
+/** Toggle mock vs. live queries */
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
+
+/** Domain types aligned with DB columns */
 export interface Watch {
   id: number;
   brand: string;
   model: string;
   reference: string;
   price: number;
-  originalPrice?: number;
+  original_price?: number | null;
   condition: string;
   seller: string;
-  rating: number;
-  reviews: number;
+  rating?: number | null;
+  reviews?: number | null;
   marketplace: string;
-  image?: string;
+  image?: string | null;
   trusted: boolean;
-  year?: number;
-  description?: string;
+  year?: number | null;
+  description?: string | null;
+  style?: string | null;
+  movement?: string | null;
+  strap?: string | null;
+  avg_price?: number | null;
+  seller_id?: number | null;        // <— number, not string
+  affiliate_url?: string | null;
+  listing_url?: string | null;
+}
+
+/** Filters used by UI */
+export type WatchFilters = {
+  brand?: string;
+  model?: string;
   style?: string;
   movement?: string;
   strap?: string;
-  avgPrice?: number;
-  seller_id?: string;
-  affiliate_url?: string;
-}
+  marketplace?: string;
+  maxPrice?: number;
+};
 
+/** Validation for rows coming from DB */
+const watchRow = z.object({
+  id: z.number(),
+  brand: z.string(),
+  model: z.string(),
+  reference: z.string(),
+  price: z.number(),
+  original_price: z.number().nullable().optional(),
+  condition: z.string(),
+  seller: z.string(),
+  rating: z.number().nullable().optional(),
+  reviews: z.number().nullable().optional(),
+  marketplace: z.string(),
+  image: z.string().nullable().optional(),
+  trusted: z.boolean().default(false),
+  year: z.number().nullable().optional(),
+  description: z.string().nullable().optional(),
+  style: z.string().nullable().optional(),
+  movement: z.string().nullable().optional(),
+  strap: z.string().nullable().optional(),
+  avg_price: z.number().nullable().optional(),
+  seller_id: z.number().nullable().optional(),
+  affiliate_url: z.string().nullable().optional(),
+  listing_url: z.string().nullable().optional(),
+});
+type WatchRow = z.infer<typeof watchRow>;
+
+/** ---------- MOCK DATA (kept from your current file) ---------- */
 const mockWatches: Watch[] = [
-  {
-    id: 1,
-    brand: 'Rolex',
-    model: 'Submariner',
-    reference: 'REF-116610LN',
-    price: 8500,
-    originalPrice: 9000,
-    condition: 'Excellent',
-    seller: 'Crown & Caliber',
-    rating: 4.8,
-    reviews: 156,
-    marketplace: 'Crown & Caliber',
-    image: '/placeholder.svg',
-    trusted: true,
-    year: 2018,
-    description: 'Classic black dial Submariner in excellent condition',
-    style: 'diver',
-    movement: 'automatic',
-    strap: 'metal',
-    avgPrice: 9500
-  },
-  {
-    id: 2,
-    brand: 'Omega',
-    model: 'Speedmaster Professional',
-    reference: 'REF-311.30.42.30.01.005',
-    price: 3200,
-    condition: 'Very Good',
-    seller: 'Hodinkee Shop',
-    rating: 4.9,
-    reviews: 89,
-    marketplace: 'Hodinkee Shop',
-    image: '/placeholder.svg',
-    trusted: true,
-    year: 2019,
-    description: 'Moonwatch with hesalite crystal',
-    style: 'chronograph',
-    movement: 'manual',
-    strap: 'metal',
-    avgPrice: 3800
-  },
-  {
-    id: 3,
-    brand: 'Patek Philippe',
-    model: 'Nautilus',
-    reference: 'REF-5711/1A-010',
-    price: 55000,
-    condition: 'Unworn',
-    seller: 'Tourneau',
-    rating: 5.0,
-    reviews: 23,
-    marketplace: 'Tourneau',
-    image: '/placeholder.svg',
-    trusted: true,
-    year: 2021,
-    description: 'Blue dial steel Nautilus, discontinued model',
-    style: 'sport',
-    movement: 'automatic',
-    strap: 'metal',
-    avgPrice: 60000
-  },
-  {
-    id: 4,
-    brand: 'Audemars Piguet',
-    model: 'Royal Oak',
-    reference: 'REF-15400ST.OO.1220ST.03',
-    price: 18500,
-    originalPrice: 20000,
-    condition: 'Excellent',
-    seller: 'Bobs Watches',
-    rating: 4.7,
-    reviews: 67,
-    marketplace: 'Bobs Watches',
-    image: '/placeholder.svg',
-    trusted: true,
-    year: 2017,
-    description: 'White dial Royal Oak 41mm',
-    style: 'sport',
-    movement: 'automatic',
-    strap: 'metal',
-    avgPrice: 22000
-  },
-  {
-    id: 5,
-    brand: 'Cartier',
-    model: 'Santos',
-    reference: 'REF-WSSA0009',
-    price: 4800,
-    condition: 'Very Good',
-    seller: 'WatchStation',
-    rating: 4.6,
-    reviews: 34,
-    marketplace: 'WatchStation',
-    image: '/placeholder.svg',
-    trusted: true,
-    year: 2020,
-    description: 'Medium steel Santos with leather strap',
-    style: 'dress',
-    movement: 'automatic',
-    strap: 'leather',
-    avgPrice: 5200
-  },
-  {
-    id: 6,
-    brand: 'Tag Heuer',
-    model: 'Monaco',
-    reference: 'REF-CAW2111.FC6183',
-    price: 2100,
-    originalPrice: 2400,
-    condition: 'Good',
-    seller: 'eBay',
-    rating: 4.2,
-    reviews: 12,
-    marketplace: 'eBay',
-    image: '/placeholder.svg',
-    trusted: false,
-    year: 2016,
-    description: 'Blue dial Monaco chronograph',
-    style: 'chronograph',
-    movement: 'automatic',
-    strap: 'leather',
-    avgPrice: 2800
-  },
-  {
-    id: 7,
-    brand: 'Grand Seiko',
-    model: 'Snowflake',
-    reference: 'REF-SBGA211',
-    price: 3800,
-    condition: 'Excellent',
-    seller: 'Seiko Authorized Dealer',
-    rating: 4.9,
-    reviews: 45,
-    marketplace: 'Seiko',
-    image: '/placeholder.svg',
-    trusted: true,
-    year: 2020,
-    description: 'Spring Drive with power reserve indicator',
-    style: 'dress',
-    movement: 'automatic',
-    strap: 'leather',
-    avgPrice: 4200
-  },
-  {
-    id: 8,
-    brand: 'Breitling',
-    model: 'Navitimer',
-    reference: 'REF-A23322121B2X1',
-    price: 3500,
-    condition: 'Very Good',
-    seller: 'Chrono24',
-    rating: 4.5,
-    reviews: 78,
-    marketplace: 'Chrono24',
-    image: '/placeholder.svg',
-    trusted: true,
-    year: 2018,
-    description: 'Blue dial pilot chronograph',
-    style: 'pilot',
-    movement: 'automatic',
-    strap: 'leather',
-    avgPrice: 3900
-  }
+  // …(keep your mock objects as-is, but rename originalPrice -> original_price to match type)…
 ];
 
-export const getAllWatches = (): Watch[] => {
-  return mockWatches;
-};
+/** ---------- Helpers ---------- */
 
-export const searchWatches = (query: string): Watch[] => {
-  if (!query.trim()) {
-    return getAllWatches();
+function rowToWatch(r: WatchRow): Watch {
+  return { ...r };
+}
+
+export function buildAffiliateLink(w: Watch) {
+  // Client-side /go route that ultimately hits your Supabase Edge Function
+  const params = new URLSearchParams({
+    watch_id: String(w.id),
+    seller_id: String(w.seller_id ?? ""),
+    utm_source: "tpo",
+    utm_medium: "affiliate",
+    utm_campaign: "listing",
+  });
+  return `/go?${params.toString()}`;
+}
+
+/** ---------- Public API used by pages ---------- */
+
+export async function getAllWatches(limit = 24, offset = 0): Promise<Watch[]> {
+  if (USE_MOCK) return mockWatches.slice(offset, offset + limit);
+  const { data, error } = await supabase
+    .from("watches")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((d) => rowToWatch(watchRow.parse(d)));
+}
+
+export async function searchWatches(
+  q: string,
+  filters: WatchFilters = {},
+  limit = 30,
+  offset = 0
+): Promise[Watch[]] {
+  if (USE_MOCK) {
+    const term = q.trim().toLowerCase();
+    let list = [...mockWatches];
+    if (term) {
+      list = list.filter(
+        (w) =>
+          w.brand.toLowerCase().includes(term) ||
+          w.model.toLowerCase().includes(term) ||
+          w.reference.toLowerCase().includes(term) ||
+          (w.style ?? "").toLowerCase().includes(term) ||
+          (w.movement ?? "").toLowerCase().includes(term) ||
+          (w.description ?? "").toLowerCase().includes(term)
+      );
+    }
+    if (filters.brand) list = list.filter((w) => w.brand.toLowerCase().includes(filters.brand!.toLowerCase()));
+    if (filters.model) list = list.filter((w) => w.model.toLowerCase().includes(filters.model!.toLowerCase()));
+    if (filters.marketplace) list = list.filter((w) => w.marketplace === filters.marketplace);
+    if (filters.maxPrice) list = list.filter((w) => w.price <= filters.maxPrice!);
+    return list.slice(offset, offset + limit);
   }
-  
-  const searchTerm = query.toLowerCase();
-  return mockWatches.filter(watch => 
-    watch.brand.toLowerCase().includes(searchTerm) ||
-    watch.model.toLowerCase().includes(searchTerm) ||
-    watch.reference.toLowerCase().includes(searchTerm) ||
-    watch.style?.toLowerCase().includes(searchTerm) ||
-    watch.movement?.toLowerCase().includes(searchTerm) ||
-    watch.description?.toLowerCase().includes(searchTerm)
-  );
-};
 
-export const getWatchByReference = (reference: string): Watch | undefined => {
-  return mockWatches.find(watch => watch.reference === reference);
-};
+  let query = supabase.from("watches").select("*");
+
+  if (q?.trim()) {
+    const term = q.trim();
+    query = query.or(
+      `brand.ilike.%${term}%,model.ilike.%${term}%,reference.ilike.%${term}%,style.ilike.%${term}%,movement.ilike.%${term}%,description.ilike.%${term}%`
+    );
+  }
+  if (filters.brand) query = query.ilike("brand", `%${filters.brand}%`);
+  if (filters.model) query = query.ilike("model", `%${filters.model}%`);
+  if (filters.marketplace) query = query.eq("marketplace", filters.marketplace);
+  if (filters.maxPrice) query = query.lte("price", filters.maxPrice);
+
+  const { data, error } = await query
+    .order("price", { ascending: true })
+    .range(offset, offset + limit - 1);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((d) => rowToWatch(watchRow.parse(d)));
+}
+
+export async function getWatchByReference(reference: string): Promise<Watch | undefined> {
+  if (USE_MOCK) return mockWatches.find((w) => w.reference === reference);
+  const { data, error } = await supabase
+    .from("watches")
+    .select("*")
+    .eq("reference", reference)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? rowToWatch(watchRow.parse(data)) : undefined;
+}
+
+/** If you’ll keep `/watch/:model`, expose a model-based getter too */
+export async function getWatchByModel(model: string): Promise<Watch | undefined> {
+  if (USE_MOCK) return mockWatches.find((w) => w.model.toLowerCase() === model.toLowerCase());
+  const { data, error } = await supabase
+    .from("watches")
+    .select("*")
+    .ilike("model", model)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? rowToWatch(watchRow.parse(data)) : undefined;
+}
