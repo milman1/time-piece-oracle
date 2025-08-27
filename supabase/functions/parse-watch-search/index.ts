@@ -1,8 +1,13 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0'
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,8 +27,19 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let searchAnalytics = {
+    search_query: '',
+    search_type: 'ai',
+    ai_parsing_success: false,
+    ai_parsing_error: null as string | null,
+    user_agent: req.headers.get('user-agent') || null,
+    session_id: req.headers.get('x-session-id') || null,
+    ai_filters_detected: null as any
+  };
+
   try {
     const { query } = await req.json();
+    searchAnalytics.search_query = query;
 
     if (!query || query.trim() === '') {
       return new Response(
@@ -83,15 +99,27 @@ Examples:
     let filters: WatchFilters = {};
     try {
       filters = JSON.parse(content);
+      searchAnalytics.ai_parsing_success = true;
+      searchAnalytics.ai_filters_detected = filters;
     } catch (parseError) {
       console.error('Failed to parse GPT response as JSON:', content);
+      searchAnalytics.ai_parsing_error = `JSON parse error: ${parseError.message}`;
       // Fallback to basic text matching
       const lowerQuery = query.toLowerCase();
       if (lowerQuery.includes('rolex')) filters.brand = 'Rolex';
       if (lowerQuery.includes('omega')) filters.brand = 'Omega';
       if (lowerQuery.includes('submariner') || lowerQuery.includes('diver')) filters.style = 'diver';
       if (lowerQuery.includes('speedmaster') || lowerQuery.includes('chronograph')) filters.style = 'chronograph';
+      
+      if (Object.keys(filters).length > 0) {
+        searchAnalytics.ai_parsing_success = true;
+        searchAnalytics.ai_filters_detected = filters;
+        searchAnalytics.ai_parsing_error = null;
+      }
     }
+
+    // Log successful analytics
+    await logSearchAnalytics(searchAnalytics);
 
     return new Response(
       JSON.stringify({ filters }),
@@ -100,9 +128,26 @@ Examples:
 
   } catch (error) {
     console.error('Error in parse-watch-search function:', error);
+    searchAnalytics.ai_parsing_error = error.message;
+    await logSearchAnalytics(searchAnalytics);
+    
     return new Response(
       JSON.stringify({ error: error.message, filters: {} }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
+
+async function logSearchAnalytics(analytics: any) {
+  try {
+    const { error } = await supabase
+      .from('search_analytics')
+      .insert([analytics]);
+    
+    if (error) {
+      console.error('Failed to log search analytics:', error);
+    }
+  } catch (error) {
+    console.error('Error logging search analytics:', error);
+  }
+}

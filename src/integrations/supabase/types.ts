@@ -194,6 +194,48 @@ export type Database = {
         }
         Relationships: []
       }
+      search_analytics: {
+        Row: {
+          ai_filters_detected: Json | null
+          ai_parsing_error: string | null
+          ai_parsing_success: boolean | null
+          created_at: string | null
+          id: string
+          results_count: number | null
+          search_query: string
+          search_type: string
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          ai_filters_detected?: Json | null
+          ai_parsing_error?: string | null
+          ai_parsing_success?: boolean | null
+          created_at?: string | null
+          id?: string
+          results_count?: number | null
+          search_query: string
+          search_type: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          ai_filters_detected?: Json | null
+          ai_parsing_error?: string | null
+          ai_parsing_success?: boolean | null
+          created_at?: string | null
+          id?: string
+          results_count?: number | null
+          search_query?: string
+          search_type?: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       seller_applications: {
         Row: {
           affiliate_id: string | null
