@@ -2,17 +2,23 @@
 // eBay Browse API integration for luxury watch search
 // Docs: https://developer.ebay.com/api-docs/buy/browse/overview.html
 //
-// To use the real API, set these env vars:
-//   VITE_EBAY_APP_ID       – your eBay app ID / client ID
-//   VITE_EBAY_AFFILIATE_ID – your eBay Partner Network campaign ID
+// OPTION A — Supabase Edge Function proxy (recommended for production):
+//   1. Set EBAY_APP_ID + EBAY_CLIENT_SECRET as Supabase Edge Function secrets
+//   2. Deploy the ebay-search Edge Function
+//   3. The service auto-detects the proxy and uses it
 //
-// Until keys are configured, this service falls back to high-quality mock data.
+// OPTION B — Direct client-side (dev only, blocked by CORS in production):
+//   Set VITE_EBAY_APP_ID + VITE_EBAY_AFFILIATE_ID in .env
+//
+// If neither is configured, falls back to high-quality mock data.
 
 import type { Watch } from './watchService';
+import { supabase } from '@/integrations/supabase/client';
 
 const EBAY_APP_ID = import.meta.env.VITE_EBAY_APP_ID || '';
 const EBAY_AFFILIATE_ID = import.meta.env.VITE_EBAY_AFFILIATE_ID || '';
-const EBAY_API_BASE = 'https://api.ebay.com/buy/browse/v1';
+// Always try the Supabase proxy first when no client-side key is set
+const USE_PROXY = !EBAY_APP_ID;
 const USE_REAL_API = !!EBAY_APP_ID;
 
 // ——— eBay API Types ———
@@ -242,15 +248,66 @@ export async function searchEbay(
         limit?: number;
     }
 ): Promise<Watch[]> {
+    // Priority: 1) Supabase proxy (no CORS), 2) Direct API (dev only), 3) Mock
+    if (USE_PROXY) {
+        return searchEbayViaProxy(query, options);
+    }
     if (USE_REAL_API) {
-        return searchEbayReal(query, options);
+        return searchEbayDirect(query, options);
     }
     return searchEbayMock(query, options);
 }
 
-// ——— Real eBay API ———
+// ——— Supabase Edge Function Proxy (production) ———
 
-async function searchEbayReal(
+async function searchEbayViaProxy(
+    query: string,
+    options?: {
+        minPrice?: number;
+        maxPrice?: number;
+        condition?: string;
+        limit?: number;
+    }
+): Promise<Watch[]> {
+    try {
+        const params: Record<string, string> = {
+            q: `luxury watch ${query}`,
+            limit: String(options?.limit || 20),
+        };
+        if (options?.minPrice) params.minPrice = String(options.minPrice);
+        if (options?.maxPrice) params.maxPrice = String(options.maxPrice);
+        if (options?.condition) params.condition = options.condition;
+
+        // Call the Supabase Edge Function with query params in the body
+        const { data, error } = await supabase.functions.invoke('ebay-search', {
+            body: params,
+        });
+
+        if (error) {
+            console.warn('eBay proxy error, falling back to mock:', error.message);
+            return searchEbayMock(query, options);
+        }
+
+        // The Edge Function returns raw eBay API JSON or an error object
+        const ebayData = data as any;
+        if (ebayData?.error) {
+            console.warn('eBay proxy returned error:', ebayData.error);
+            return searchEbayMock(query, options);
+        }
+        if (!ebayData?.itemSummaries?.length) {
+            return []; // Genuine empty results
+        }
+
+        return (ebayData.itemSummaries as EbayItemSummary[]).map(mapEbayItem);
+    } catch (error) {
+        console.warn('eBay proxy fetch failed, falling back to mock:', error);
+        return searchEbayMock(query, options);
+    }
+}
+
+// ——— Direct eBay API (dev only — blocked by CORS in production) ———
+
+async function searchEbayDirect(
     query: string,
     options?: {
         minPrice?: number;
@@ -262,12 +319,11 @@ async function searchEbayReal(
     const limit = options?.limit || 20;
     const params = new URLSearchParams({
         q: `luxury watch ${query}`,
-        category_ids: '31387', // Wristwatches category
+        category_ids: '31387',
         limit: String(limit),
         sort: 'price',
     });
 
-    // Price filter
     if (options?.minPrice || options?.maxPrice) {
         const filters: string[] = [];
         if (options.minPrice) filters.push(`price:[${options.minPrice}..`);
@@ -281,13 +337,12 @@ async function searchEbayReal(
         params.set('filter', filters.join(','));
     }
 
-    // Affiliate tracking
     if (EBAY_AFFILIATE_ID) {
         params.set('X-EBAY-C-ENRICH-PARAMS', `affiliate_campaign_id=${EBAY_AFFILIATE_ID}`);
     }
 
     try {
-        const response = await fetch(`${EBAY_API_BASE}/item_summary/search?${params}`, {
+        const response = await fetch(`https://api.ebay.com/buy/browse/v1/item_summary/search?${params}`, {
             headers: {
                 'Authorization': `Bearer ${EBAY_APP_ID}`,
                 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
