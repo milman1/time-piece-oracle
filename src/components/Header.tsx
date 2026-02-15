@@ -20,9 +20,7 @@ export const Header = () => {
     <header className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <Link to="/">
-            <Logo size="md" variant="header" />
-          </Link>
+          <Logo size="md" variant="header" />
         </div>
 
         <nav className="hidden md:flex items-center space-x-8">
