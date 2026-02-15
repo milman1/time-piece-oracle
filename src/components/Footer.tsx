@@ -10,53 +10,53 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold text-foreground mb-4">About Hours</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Compare prices from the world's most trusted watch dealers and marketplaces.
+              The luxury watch meta-marketplace. Aggregating listings from eBay, Chrono24, WatchBox, and vetted independents.
             </p>
             <p className="text-xs text-muted-foreground">
               We may earn a commission when you buy through links on our site.
             </p>
           </div>
 
-          {/* Quick Links */}
+          {/* For Buyers */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Quick Links</h3>
+            <h3 className="font-semibold text-foreground mb-4">For Buyers</h3>
             <ul className="space-y-2 text-sm">
+              <li><Link to="/browse" className="text-muted-foreground hover:text-foreground transition-colors">Search Watches</Link></li>
+              <li><Link to="/compare" className="text-muted-foreground hover:text-foreground transition-colors">Compare Prices</Link></li>
               <li><Link to="/price-alert" className="text-muted-foreground hover:text-foreground transition-colors">Price Alerts</Link></li>
               <li><Link to="/trusted-sellers" className="text-muted-foreground hover:text-foreground transition-colors">Trusted Sellers</Link></li>
-              <li><Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
             </ul>
           </div>
 
-          {/* Popular Brands */}
+          {/* For Sellers */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Popular Brands</h3>
+            <h3 className="font-semibold text-foreground mb-4">For Sellers</h3>
             <ul className="space-y-2 text-sm">
-              <li><span className="text-muted-foreground">Rolex</span></li>
-              <li><span className="text-muted-foreground">Omega</span></li>
-              <li><span className="text-muted-foreground">Patek Philippe</span></li>
-              <li><span className="text-muted-foreground">Audemars Piguet</span></li>
+              <li><Link to="/for-sellers" className="text-muted-foreground hover:text-foreground transition-colors">Join Our Network</Link></li>
+              <li><Link to="/for-sellers#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
+              <li><Link to="/seller-application" className="text-muted-foreground hover:text-foreground transition-colors">Apply Now</Link></li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Contact</h3>
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p>help@hours.com</p>
-              <p>Follow market trends and get the best deals</p>
-            </div>
+            <h3 className="font-semibold text-foreground mb-4">Company</h3>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
+              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Affiliate Disclosure</a></li>
+            </ul>
           </div>
         </div>
 
         <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-            © 2024 Hours. All rights reserved.
+            © {new Date().getFullYear()} Hours. All rights reserved.
           </p>
-          <div className="flex space-x-6 text-sm">
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Affiliate Disclosure</a>
-          </div>
+          <p className="text-xs text-muted-foreground">
+            Hours aggregates listings from major platforms and vetted independents. We don't hold inventory or process transactions.
+          </p>
         </div>
       </div>
     </footer>

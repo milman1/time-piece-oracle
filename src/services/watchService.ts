@@ -1,6 +1,8 @@
 // src/services/watchService.ts
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { searchEbay } from './ebayService';
+import { searchChrono24, searchWatchBox, searchBobsWatches, searchHodinkee, searchCrownCaliber } from './platformMockService';
 
 /** Toggle mock vs. live queries */
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
@@ -254,4 +256,81 @@ export async function getWatchByModel(model: string): Promise<Watch | undefined>
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? rowToWatch(watchRow.parse(data)) : undefined;
+}
+
+/** ---------- Cross-platform aggregation ---------- */
+
+export interface WatchGroup {
+  brand: string;
+  model: string;
+  reference: string;
+  lowestPrice: number;
+  highestPrice: number;
+  listingCount: number;
+  listings: Watch[];
+}
+
+/**
+ * Search all platforms in parallel and merge results.
+ * Returns both a flat list and grouped-by-model results.
+ */
+export async function searchAllPlatforms(
+  query: string,
+  options?: { minPrice?: number; maxPrice?: number; condition?: string; platforms?: string[] }
+): Promise<{ all: Watch[]; grouped: WatchGroup[] }> {
+  const enabledPlatforms = options?.platforms || [];
+  const shouldInclude = (name: string) => enabledPlatforms.length === 0 || enabledPlatforms.includes(name);
+
+  // Query all platforms in parallel
+  const promises: Promise<Watch[]>[] = [];
+  if (shouldInclude('eBay')) promises.push(searchEbay(query, options).catch(() => []));
+  if (shouldInclude('Chrono24')) promises.push(searchChrono24(query).catch(() => []));
+  if (shouldInclude('WatchBox')) promises.push(searchWatchBox(query).catch(() => []));
+  if (shouldInclude("Bob's Watches")) promises.push(searchBobsWatches(query).catch(() => []));
+  if (shouldInclude('Hodinkee')) promises.push(searchHodinkee(query).catch(() => []));
+  if (shouldInclude('Crown & Caliber')) promises.push(searchCrownCaliber(query).catch(() => []));
+
+  // Also include Supabase/mock watches
+  if (query.trim()) {
+    promises.push(searchWatches(query).catch(() => []));
+  } else {
+    promises.push(getAllWatches(50).catch(() => []));
+  }
+
+  const results = await Promise.all(promises);
+  let all = results.flat();
+
+  // Apply price filters
+  if (options?.minPrice) all = all.filter(w => w.price >= options.minPrice!);
+  if (options?.maxPrice) all = all.filter(w => w.price <= options.maxPrice!);
+  if (options?.condition) all = all.filter(w => w.condition === options.condition);
+
+  // Sort by price
+  all.sort((a, b) => a.price - b.price);
+
+  // Group by reference (same watch model)
+  const groups = new Map<string, WatchGroup>();
+  for (const w of all) {
+    const key = w.reference?.toLowerCase() || `${w.brand}-${w.model}`.toLowerCase();
+    if (!groups.has(key)) {
+      groups.set(key, {
+        brand: w.brand,
+        model: w.model,
+        reference: w.reference,
+        lowestPrice: w.price,
+        highestPrice: w.price,
+        listingCount: 0,
+        listings: [],
+      });
+    }
+    const g = groups.get(key)!;
+    g.listings.push(w);
+    g.listingCount++;
+    g.lowestPrice = Math.min(g.lowestPrice, w.price);
+    g.highestPrice = Math.max(g.highestPrice, w.price);
+  }
+
+  const grouped = Array.from(groups.values()).sort((a, b) => b.listingCount - a.listingCount);
+
+  return { all, grouped };
 }

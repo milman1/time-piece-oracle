@@ -15,6 +15,11 @@ import Go from "./pages/Go";
 import Auth from "./pages/Auth";
 import AffiliatePricing from "./pages/AffiliatePricing";
 import SearchAnalytics from "./pages/SearchAnalytics";
+import BrowseMarketplace from "./pages/BrowseMarketplace";
+import CompareWatches from "./pages/CompareWatches";
+import SellerProfile from "./pages/SellerProfile";
+import ForSellers from "./pages/ForSellers";
+import SellerApplication from "./pages/SellerApplication";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +33,11 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/browse" element={<BrowseMarketplace />} />
+            <Route path="/compare" element={<CompareWatches />} />
+            <Route path="/for-sellers" element={<ForSellers />} />
+            <Route path="/seller-application" element={<SellerApplication />} />
+            <Route path="/seller/:id" element={<SellerProfile />} />
             <Route path="/price-alert" element={<PriceAlert />} />
             <Route path="/watch/:brand/:model/:ref" element={<ProductDetail />} />
             <Route path="/watch/:model" element={<LegacyProductRedirect />} />
@@ -37,7 +47,6 @@ const App = () => (
             <Route path="/go" element={<Go />} />
             <Route path="/partners/pricing" element={<AffiliatePricing />} />
             <Route path="/analytics/search" element={<SearchAnalytics />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

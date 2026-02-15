@@ -24,13 +24,16 @@ export const Header = () => {
             <Logo size="md" variant="header" />
           </Link>
         </div>
-        
+
         <nav className="hidden md:flex items-center space-x-8">
-          <Link to="/price-alert" className="text-muted-foreground hover:text-foreground transition-colors">
-            Price Alerts
+          <Link to="/browse" className="text-muted-foreground hover:text-foreground transition-colors">
+            Search
           </Link>
-          <Link to="/trusted-sellers" className="text-muted-foreground hover:text-foreground transition-colors">
-            Trusted Sellers
+          <Link to="/compare" className="text-muted-foreground hover:text-foreground transition-colors">
+            Compare
+          </Link>
+          <Link to="/for-sellers" className="text-muted-foreground hover:text-foreground transition-colors">
+            For Sellers
           </Link>
           <Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
             Blog
