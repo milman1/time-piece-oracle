@@ -15,6 +15,7 @@
 // -----------------
 
 import type { Watch } from './watchService';
+import { supabase } from '@/integrations/supabase/client';
 
 // ——— Platform Adapter Interface ———
 // Implement this interface when adding a real API integration.
@@ -28,11 +29,39 @@ export interface PlatformAdapter {
 export function getAllAdapters(): PlatformAdapter[] {
     return [
         { name: 'Chrono24', search: searchChrono24 },
+        { name: 'StockX', search: searchStockX },
         { name: 'WatchBox', search: searchWatchBox },
         { name: "Bob's Watches", search: searchBobsWatches },
+        { name: 'Bezel', search: searchBezel },
         { name: 'Hodinkee', search: searchHodinkee },
         { name: 'Crown & Caliber', search: searchCrownCaliber },
     ];
+}
+
+// ——— Database Search (uses scraped data from Firecrawl) ———
+
+async function searchFromDatabase(marketplace: string, query: string): Promise<Watch[] | null> {
+    try {
+        let dbQuery = supabase
+            .from('watches')
+            .select('*')
+            .eq('marketplace', marketplace)
+            .limit(20);
+
+        if (query.trim()) {
+            dbQuery = dbQuery.or(`brand.ilike.%${query}%,model.ilike.%${query}%,description.ilike.%${query}%`);
+        }
+
+        const { data, error } = await dbQuery;
+
+        if (error || !data || data.length === 0) {
+            return null; // No scraped data — will fall back to mock
+        }
+
+        return data as unknown as Watch[];
+    } catch {
+        return null;
+    }
 }
 
 // ——— Chrono24 Mock ———
@@ -203,32 +232,54 @@ const crownCalibreListings: Watch[] = [
 // ——— Public API ———
 
 export async function searchChrono24(query: string): Promise<Watch[]> {
+    const dbResults = await searchFromDatabase('Chrono24', query);
+    if (dbResults) return dbResults;
     await delay(350);
     return filterByQuery(chrono24Listings, query);
 }
 
+export async function searchStockX(query: string): Promise<Watch[]> {
+    const dbResults = await searchFromDatabase('StockX', query);
+    if (dbResults) return dbResults;
+    return []; // No mock data for StockX — will be populated by scraper
+}
+
 export async function searchWatchBox(query: string): Promise<Watch[]> {
+    const dbResults = await searchFromDatabase('WatchBox', query);
+    if (dbResults) return dbResults;
     await delay(250);
     return filterByQuery(watchBoxListings, query);
 }
 
 export async function searchBobsWatches(query: string): Promise<Watch[]> {
+    const dbResults = await searchFromDatabase("Bob's Watches", query);
+    if (dbResults) return dbResults;
     await delay(300);
     return filterByQuery(bobsListings, query);
 }
 
+export async function searchBezel(query: string): Promise<Watch[]> {
+    const dbResults = await searchFromDatabase('Bezel', query);
+    if (dbResults) return dbResults;
+    return []; // No mock data for Bezel — will be populated by scraper
+}
+
 export async function searchHodinkee(query: string): Promise<Watch[]> {
+    const dbResults = await searchFromDatabase('Hodinkee', query);
+    if (dbResults) return dbResults;
     await delay(200);
     return filterByQuery(hodinkeeListings, query);
 }
 
 export async function searchCrownCaliber(query: string): Promise<Watch[]> {
+    const dbResults = await searchFromDatabase('Crown & Caliber', query);
+    if (dbResults) return dbResults;
     await delay(280);
     return filterByQuery(crownCalibreListings, query);
 }
 
 export function getAllPlatformNames(): string[] {
-    return ['eBay', 'Chrono24', 'WatchBox', "Bob's Watches", 'Hodinkee', 'Crown & Caliber'];
+    return ['eBay', 'Chrono24', 'StockX', 'WatchBox', "Bob's Watches", 'Bezel', 'Hodinkee', 'Crown & Caliber'];
 }
 
 // ——— Helpers ———
