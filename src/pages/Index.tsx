@@ -12,7 +12,7 @@ import { HeroSearch } from '@/components/HeroSearch';
 import { WatchGrid } from '@/components/WatchGrid';
 import { WatchRecommendations } from '@/components/WatchRecommendations';
 import { TrustSection } from '@/components/TrustSection';
-import { TrendingWatches } from '@/components/TrendingWatches';
+
 import Footer from '@/components/Footer';
 import { searchWatches, getAllWatches, Watch as WatchType, searchAllPlatforms, WatchGroup } from '@/services/watchService';
 import { searchWatchesWithFilters, getWatchRecommendations, WatchFilters } from '@/services/searchService';
@@ -330,7 +330,7 @@ const Index = () => {
             </section>
           )}
 
-          <TrendingWatches />
+
 
           {/* Alerts + Analytics */}
           <section className="py-12 md:py-16 px-4 bg-white">
