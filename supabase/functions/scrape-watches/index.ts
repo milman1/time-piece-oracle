@@ -136,8 +136,8 @@ serve(async (req) => {
                             schema: WATCH_EXTRACTION_SCHEMA,
                             prompt: `Extract all watch listings from this page. For each listing, get the title, price (as a number in USD), condition, seller name, listing URL, image URL, brand, model, and reference number. If the price is in EUR, convert approximately to USD (multiply by 1.08).`,
                         },
-                        waitFor: 2000, // Wait for JS to render
-                        timeout: 15000,
+                        waitFor: 5000,
+                        timeout: 60000,
                     }),
                 })
 
