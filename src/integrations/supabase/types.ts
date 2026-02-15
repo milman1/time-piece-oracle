@@ -18,7 +18,7 @@ export type Database = {
         Row: {
           clicked_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           referrer: string | null
           seller_id: string | null
           user_agent: string | null
@@ -30,7 +30,7 @@ export type Database = {
         Insert: {
           clicked_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           referrer?: string | null
           seller_id?: string | null
           user_agent?: string | null
@@ -42,7 +42,7 @@ export type Database = {
         Update: {
           clicked_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           referrer?: string | null
           seller_id?: string | null
           user_agent?: string | null
