@@ -159,7 +159,7 @@ Return exactly 3 recommendations in JSON format:
     return new Response(
       JSON.stringify({ 
         recommendations: fallbackRecommendations,
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

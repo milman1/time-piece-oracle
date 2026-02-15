@@ -103,7 +103,7 @@ Examples:
       searchAnalytics.ai_filters_detected = filters;
     } catch (parseError) {
       console.error('Failed to parse GPT response as JSON:', content);
-      searchAnalytics.ai_parsing_error = `JSON parse error: ${parseError.message}`;
+      searchAnalytics.ai_parsing_error = `JSON parse error: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`;
       // Fallback to basic text matching
       const lowerQuery = query.toLowerCase();
       if (lowerQuery.includes('rolex')) filters.brand = 'Rolex';
@@ -128,11 +128,11 @@ Examples:
 
   } catch (error) {
     console.error('Error in parse-watch-search function:', error);
-    searchAnalytics.ai_parsing_error = error.message;
+    searchAnalytics.ai_parsing_error = error instanceof Error ? error.message : 'Unknown error';
     await logSearchAnalytics(searchAnalytics);
     
     return new Response(
-      JSON.stringify({ error: error.message, filters: {} }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error', filters: {} }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
