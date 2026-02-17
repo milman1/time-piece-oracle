@@ -30,12 +30,29 @@ serve(async (req) => {
 
         const affiliateCampaignId = Deno.env.get('EBAY_AFFILIATE_CAMPAIGN_ID') || ''
 
-        const url = new URL(req.url)
-        const query = url.searchParams.get('q') || ''
-        const limit = url.searchParams.get('limit') || '20'
-        const minPrice = url.searchParams.get('minPrice')
-        const maxPrice = url.searchParams.get('maxPrice')
-        const condition = url.searchParams.get('condition')
+        // Read params from body (supabase.functions.invoke) or URL query params
+        let query = ''
+        let limit = '20'
+        let minPrice: string | null = null
+        let maxPrice: string | null = null
+        let condition: string | null = null
+
+        try {
+            const body = await req.json()
+            query = body.q || ''
+            limit = body.limit || '20'
+            minPrice = body.minPrice || null
+            maxPrice = body.maxPrice || null
+            condition = body.condition || null
+        } catch {
+            // Fallback to URL query params
+            const url = new URL(req.url)
+            query = url.searchParams.get('q') || ''
+            limit = url.searchParams.get('limit') || '20'
+            minPrice = url.searchParams.get('minPrice')
+            maxPrice = url.searchParams.get('maxPrice')
+            condition = url.searchParams.get('condition')
+        }
 
         if (!query.trim()) {
             return new Response(
