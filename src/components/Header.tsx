@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
 import { useAuth } from '@/hooks/useAuth';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Menu, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,14 @@ import {
 
 export const Header = () => {
   const { user, signOut, loading } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { to: '/browse', label: 'Search' },
+    { to: '/compare', label: 'Compare' },
+    { to: '/for-sellers', label: 'For Sellers' },
+    { to: '/blog', label: 'Blog' },
+  ];
 
   return (
     <header className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
@@ -23,22 +31,16 @@ export const Header = () => {
           <Logo size="md" variant="header" />
         </div>
 
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center space-x-8">
-          <Link to="/browse" className="text-muted-foreground hover:text-foreground transition-colors">
-            Search
-          </Link>
-          <Link to="/compare" className="text-muted-foreground hover:text-foreground transition-colors">
-            Compare
-          </Link>
-          <Link to="/for-sellers" className="text-muted-foreground hover:text-foreground transition-colors">
-            For Sellers
-          </Link>
-          <Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
-            Blog
-          </Link>
+          {navLinks.map(link => (
+            <Link key={link.to} to={link.to} className="text-muted-foreground hover:text-foreground transition-colors">
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
-        <div className="flex items-center space-x-2 md:space-x-4">
+        <div className="flex items-center gap-2 md:gap-4">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -66,16 +68,50 @@ export const Header = () => {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" asChild className="text-muted-foreground text-sm md:text-base px-2 md:px-4">
+              <Button variant="ghost" asChild className="text-muted-foreground text-sm px-2 md:px-4 hidden sm:inline-flex">
                 <Link to="/auth">Sign In</Link>
               </Button>
-              <Button asChild className="bg-slate-900 hover:bg-slate-800 text-white text-sm md:text-base px-3 md:px-4">
+              <Button asChild className="bg-slate-900 hover:bg-slate-800 text-white text-sm px-3 md:px-4">
                 <Link to="/auth?mode=signup">Get Started</Link>
               </Button>
             </>
           )}
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 -mr-2 text-foreground"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile drawer */}
+      {mobileMenuOpen && (
+        <nav className="md:hidden border-t border-border bg-white px-4 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200">
+          {navLinks.map(link => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-3 px-2 text-foreground hover:bg-slate-50 rounded-lg text-base font-medium"
+            >
+              {link.label}
+            </Link>
+          ))}
+          {!user && (
+            <Link
+              to="/auth"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-3 px-2 text-muted-foreground hover:bg-slate-50 rounded-lg text-base"
+            >
+              Sign In
+            </Link>
+          )}
+        </nav>
+      )}
     </header>
   );
 };

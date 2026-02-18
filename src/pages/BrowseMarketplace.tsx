@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -19,8 +19,10 @@ type SortOption = 'price-asc' | 'price-desc' | 'most-listings';
 type ViewMode = 'grid' | 'grouped';
 
 const BrowseMarketplace = () => {
-    const [searchText, setSearchText] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [searchParams] = useSearchParams();
+    const initialQuery = searchParams.get('q') || '';
+    const [searchText, setSearchText] = useState(initialQuery);
+    const [debouncedSearch, setDebouncedSearch] = useState(initialQuery);
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
     const [selectedCondition, setSelectedCondition] = useState('');
@@ -30,6 +32,15 @@ const BrowseMarketplace = () => {
     const [viewMode, setViewMode] = useState<ViewMode>('grouped');
 
     const platformNames = getAllPlatformNames();
+
+    // Sync URL param changes (e.g. from homepage search)
+    useEffect(() => {
+        const q = searchParams.get('q') || '';
+        if (q && q !== searchText) {
+            setSearchText(q);
+            setDebouncedSearch(q);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(searchText), 400);
@@ -90,24 +101,24 @@ const BrowseMarketplace = () => {
             <main className="py-8 md:py-12 px-4">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl md:text-4xl font-light text-foreground mb-3">
+                    <div className="text-center mb-6 md:mb-8">
+                        <h1 className="text-2xl md:text-4xl font-light text-foreground mb-2 md:mb-3">
                             Search the Meta-Marketplace
                         </h1>
-                        <p className="text-muted-foreground max-w-xl mx-auto">
+                        <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
                             Every listing from {platformNames.length} platforms + vetted independents, in one search
                         </p>
                     </div>
 
                     {/* Search Bar */}
-                    <div className="max-w-2xl mx-auto mb-8">
+                    <div className="max-w-2xl mx-auto mb-6 md:mb-8">
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                             <Input
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
                                 placeholder="Search by brand, model, or reference..."
-                                className="pl-12 pr-12 py-3 rounded-xl text-base"
+                                className="pl-11 pr-12 py-3 rounded-xl text-base"
                             />
                             <Button
                                 variant="ghost"
@@ -158,8 +169,8 @@ const BrowseMarketplace = () => {
                                             key={p}
                                             onClick={() => togglePlatform(p)}
                                             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${selectedPlatforms.includes(p) || selectedPlatforms.length === 0
-                                                    ? 'bg-slate-900 text-white border-slate-900'
-                                                    : 'bg-white border-slate-200 text-muted-foreground hover:border-slate-400'
+                                                ? 'bg-slate-900 text-white border-slate-900'
+                                                : 'bg-white border-slate-200 text-muted-foreground hover:border-slate-400'
                                                 }`}
                                         >
                                             {p}
@@ -177,36 +188,36 @@ const BrowseMarketplace = () => {
                     )}
 
                     {/* Controls Bar */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setViewMode('grouped')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === 'grouped' ? 'bg-slate-900 text-white' : 'bg-white border hover:border-slate-400 text-muted-foreground'
-                                    }`}
+                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === 'grouped' ? 'bg-slate-900 text-white' : 'bg-white border hover:border-slate-400 text-muted-foreground'}`}
                             >
                                 Grouped by Model
                             </button>
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white' : 'bg-white border hover:border-slate-400 text-muted-foreground'
-                                    }`}
+                                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white' : 'bg-white border hover:border-slate-400 text-muted-foreground'}`}
                             >
                                 All Listings
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-                            <select
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                                className="text-sm border rounded-lg px-3 py-1.5"
-                            >
-                                <option value="price-asc">Price: Low to High</option>
-                                <option value="price-desc">Price: High to Low</option>
-                                <option value="most-listings">Most Options</option>
-                            </select>
-                            <span className="text-sm text-muted-foreground ml-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5">
+                                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                                    className="text-sm border rounded-lg px-2 py-1.5"
+                                >
+                                    <option value="price-asc">Price: Low to High</option>
+                                    <option value="price-desc">Price: High to Low</option>
+                                    <option value="most-listings">Most Options</option>
+                                </select>
+                            </div>
+                            <span className="text-xs md:text-sm text-muted-foreground">
                                 {allListings.length} listings across {grouped.length} models
                             </span>
                         </div>
@@ -221,18 +232,18 @@ const BrowseMarketplace = () => {
                         <div className="space-y-4">
                             {sortedGrouped.map((group: WatchGroup) => (
                                 <Card key={`${group.brand}-${group.reference}`} className="border">
-                                    <CardContent className="p-5">
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
+                                    <CardContent className="p-3 md:p-5">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 md:mb-4 gap-1 md:gap-2">
                                             <div>
-                                                <h3 className="text-lg font-medium text-foreground">
+                                                <h3 className="text-base md:text-lg font-medium text-foreground">
                                                     {group.brand} {group.model}
                                                 </h3>
                                                 <p className="text-xs text-muted-foreground">
                                                     Ref: {group.reference} · {group.listingCount} listing{group.listingCount > 1 ? 's' : ''} found
                                                 </p>
                                             </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-2xl font-semibold">${group.lowestPrice.toLocaleString()}</span>
+                                            <div className="flex items-center gap-2 md:gap-3">
+                                                <span className="text-xl md:text-2xl font-semibold">${group.lowestPrice.toLocaleString()}</span>
                                                 {group.listingCount > 1 && group.highestPrice > group.lowestPrice && (
                                                     <>
                                                         <span className="text-xs text-muted-foreground">
@@ -247,30 +258,23 @@ const BrowseMarketplace = () => {
                                             </div>
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="space-y-1.5 md:space-y-2">
                                             {group.listings.sort((a, b) => a.price - b.price).map((listing: Watch, idx: number) => (
                                                 <div
                                                     key={listing.id}
-                                                    className={`flex items-center gap-4 p-3 rounded-lg ${idx === 0 ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-slate-50'
-                                                        }`}
+                                                    className={`flex items-center gap-2 md:gap-4 p-2 md:p-3 rounded-lg ${idx === 0 ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-slate-50'}`}
                                                 >
-                                                    {idx === 0 && <Badge className="bg-emerald-600 text-white text-xs flex-shrink-0">Best Price</Badge>}
-                                                    <Badge variant="outline" className="text-xs flex-shrink-0">{listing.marketplace}</Badge>
-                                                    <span className="text-sm text-muted-foreground truncate flex-1">{listing.seller}</span>
-                                                    <div className="hidden md:flex items-center gap-1 text-xs text-muted-foreground">
-                                                        {listing.trusted && <ShieldCheck className="h-3 w-3 text-emerald-500" />}
-                                                        <Star className="h-3 w-3 text-yellow-500" />
-                                                        {listing.rating}
-                                                    </div>
-                                                    <Badge variant="outline" className="text-xs hidden sm:inline-flex">{listing.condition}</Badge>
-                                                    <span className={`font-semibold flex-shrink-0 ${idx === 0 ? 'text-lg' : 'text-sm'}`}>
+                                                    {idx === 0 && <Badge className="bg-emerald-600 text-white text-xs shrink-0">Best</Badge>}
+                                                    <Badge variant="outline" className="text-xs shrink-0">{listing.marketplace}</Badge>
+                                                    <span className="text-xs md:text-sm text-muted-foreground truncate flex-1 min-w-0">{listing.seller}</span>
+                                                    <span className={`font-semibold shrink-0 ${idx === 0 ? 'text-base md:text-lg' : 'text-sm'}`}>
                                                         ${listing.price.toLocaleString()}
                                                     </span>
                                                     <Button
                                                         size="sm"
                                                         variant={idx === 0 ? "default" : "outline"}
                                                         asChild
-                                                        className="rounded-lg text-xs px-3 flex-shrink-0"
+                                                        className="rounded-lg text-xs px-2.5 md:px-3 shrink-0 h-8 min-w-[52px]"
                                                     >
                                                         <a href={listing.listing_url || listing.affiliate_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                                                             View <ExternalLink className="h-3 w-3" />
