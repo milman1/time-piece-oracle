@@ -38,29 +38,81 @@ export interface WatchRecommendation {
 }
 
 export const parseSearchQuery = async (query: string): Promise<WatchFilters> => {
+  // Try the AI Edge Function first
   try {
     const response = await supabase.functions.invoke('parse-watch-search', {
       body: { query }
     });
 
-    if (response.error) {
-      console.error('Error parsing search query:', response.error);
-      return {};
+    if (!response.error && response.data?.filters && Object.keys(response.data.filters).length > 0) {
+      return response.data.filters;
     }
-
-    return response.data?.filters || {};
   } catch (error) {
-    console.error('Error calling parse-watch-search function:', error);
-    return {};
+    console.warn('AI search unavailable, using local parser:', error);
   }
+
+  // Fallback: local client-side parser (works without OpenAI)
+  return parseSearchQueryLocal(query);
 };
+
+function parseSearchQueryLocal(query: string): WatchFilters {
+  const lower = query.toLowerCase();
+  const filters: WatchFilters = {};
+
+  // Brand detection
+  const brands: Record<string, string> = {
+    'rolex': 'Rolex', 'omega': 'Omega', 'patek philippe': 'Patek Philippe', 'patek': 'Patek Philippe',
+    'audemars piguet': 'Audemars Piguet', 'ap': 'Audemars Piguet',
+    'tudor': 'Tudor', 'cartier': 'Cartier', 'iwc': 'IWC', 'breitling': 'Breitling',
+    'hublot': 'Hublot', 'tag heuer': 'TAG Heuer', 'panerai': 'Panerai',
+    'jaeger': 'Jaeger-LeCoultre', 'vacheron': 'Vacheron Constantin',
+    'grand seiko': 'Grand Seiko', 'zenith': 'Zenith', 'chopard': 'Chopard',
+    'longines': 'Longines', 'tissot': 'Tissot', 'hamilton': 'Hamilton', 'seiko': 'Seiko',
+  };
+  for (const [key, brand] of Object.entries(brands)) {
+    if (lower.includes(key)) { filters.brand = brand; break; }
+  }
+
+  // Style detection
+  const styles: Record<string, string> = {
+    'diver': 'diver', 'diving': 'diver', 'dive': 'diver', 'submariner': 'diver', 'seamaster': 'diver',
+    'chronograph': 'chronograph', 'chrono': 'chronograph', 'daytona': 'chronograph', 'speedmaster': 'chronograph',
+    'pilot': 'pilot', 'aviation': 'pilot', 'flieger': 'pilot', 'navitimer': 'pilot',
+    'dress': 'dress', 'elegant': 'dress', 'formal': 'dress', 'classic': 'dress',
+    'sport': 'sport', 'sports': 'sport', 'nautilus': 'sport', 'royal oak': 'sport',
+    'field': 'sport', 'daily': 'sport',
+  };
+  for (const [key, style] of Object.entries(styles)) {
+    if (lower.includes(key)) { filters.style = style; break; }
+  }
+
+  // Movement detection
+  if (lower.includes('automatic') || lower.includes('auto')) filters.movement = 'automatic';
+  else if (lower.includes('manual') || lower.includes('hand wound') || lower.includes('hand-wound')) filters.movement = 'manual';
+  else if (lower.includes('quartz') || lower.includes('battery')) filters.movement = 'quartz';
+
+  // Strap detection
+  if (lower.includes('leather')) filters.strap = 'leather';
+  else if (lower.includes('metal') || lower.includes('bracelet') || lower.includes('steel')) filters.strap = 'bracelet';
+  else if (lower.includes('rubber') || lower.includes('silicone')) filters.strap = 'rubber';
+  else if (lower.includes('nato')) filters.strap = 'nato';
+
+  // Price detection
+  const priceMatch = query.match(/(?:under|below|less than|max|up to|<)\s*\$?\s*([\d,]+)/i)
+    || query.match(/\$\s*([\d,]+)/i);
+  if (priceMatch) {
+    filters.max_price = parseInt(priceMatch[1].replace(/,/g, ''), 10);
+  }
+
+  return filters;
+}
 
 export const getWatchRecommendations = async (originalQuery: string, filters: WatchFilters): Promise<WatchRecommendation[]> => {
   try {
     const response = await supabase.functions.invoke('get-watch-recommendations', {
-      body: { 
+      body: {
         originalQuery,
-        filters 
+        filters
       }
     });
 
@@ -195,8 +247,12 @@ export const searchWatchesWithFilters = async (filters: WatchFilters, textQuery?
     }
 
     // If there's still a text query, apply it as a general search
+    // Sanitize: remove special chars that break Supabase .or() filter syntax
     if (textQuery && textQuery.trim()) {
-      query = query.or(`brand.ilike.%${textQuery}%,model.ilike.%${textQuery}%,reference.ilike.%${textQuery}%,description.ilike.%${textQuery}%`);
+      const sanitized = textQuery.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+      if (sanitized) {
+        query = query.or(`brand.ilike.%${sanitized}%,model.ilike.%${sanitized}%,reference.ilike.%${sanitized}%,description.ilike.%${sanitized}%`);
+      }
     }
 
     const { data, error } = await query

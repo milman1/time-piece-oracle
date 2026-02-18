@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Search, ShieldCheck, Star, TrendingUp, ArrowRight, ExternalLink, TrendingDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -14,8 +14,8 @@ import { WatchRecommendations } from '@/components/WatchRecommendations';
 import { TrustSection } from '@/components/TrustSection';
 
 import Footer from '@/components/Footer';
-import { searchWatches, getAllWatches, Watch as WatchType, searchAllPlatforms, WatchGroup } from '@/services/watchService';
-import { searchWatchesWithFilters, getWatchRecommendations, WatchFilters } from '@/services/searchService';
+import { Watch as WatchType, searchAllPlatforms, WatchGroup } from '@/services/watchService';
+import { getWatchRecommendations, WatchFilters } from '@/services/searchService';
 import { getFeaturedSellers, VettedSeller } from '@/services/sellerService';
 import { getAllPlatformNames } from '@/services/platformMockService';
 
@@ -25,19 +25,33 @@ const Index = () => {
   const [lastSearchFilters, setLastSearchFilters] = useState<WatchFilters>({});
   const queryClient = useQueryClient();
   const platformNames = getAllPlatformNames();
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const { data: searchResults = [], isLoading: isSearching } = useQuery({
     queryKey: ['searchWatches', searchQuery, lastSearchFilters],
     queryFn: async () => {
       if (!searchQuery.trim() && Object.keys(lastSearchFilters).length === 0) return [];
-      let results: WatchType[] = [];
+
+      // Use the full aggregation layer (eBay API + all platform adapters + DB)
+      const aggregated = await searchAllPlatforms(searchQuery);
+      let results: WatchType[] = aggregated.all || [];
+
+      // Apply AI-parsed filters on top
       if (lastSearchFilters && Object.keys(lastSearchFilters).length > 0) {
-        results = await searchWatchesWithFilters(lastSearchFilters, searchQuery);
-      } else if (searchQuery.trim()) {
-        results = await searchWatches(searchQuery);
-      } else {
-        results = await getAllWatches();
+        if (lastSearchFilters.brand) {
+          results = results.filter(w => w.brand.toLowerCase().includes(lastSearchFilters.brand!.toLowerCase()));
+        }
+        if (lastSearchFilters.style) {
+          results = results.filter(w => (w.style || '').toLowerCase().includes(lastSearchFilters.style!.toLowerCase()));
+        }
+        if (lastSearchFilters.movement) {
+          results = results.filter(w => (w.movement || '').toLowerCase().includes(lastSearchFilters.movement!.toLowerCase()));
+        }
+        if (lastSearchFilters.max_price) {
+          results = results.filter(w => w.price <= lastSearchFilters.max_price!);
+        }
       }
+
       return results;
     },
     enabled: showResults,
@@ -71,6 +85,10 @@ const Index = () => {
     setShowResults(true);
     queryClient.invalidateQueries({ queryKey: ['searchWatches'] });
     queryClient.invalidateQueries({ queryKey: ['recommendations'] });
+    // Auto-scroll to results after a short delay for render
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
   }, [queryClient]);
 
   const handleSearchRecommendation = (brand: string, model: string) => {
@@ -80,8 +98,8 @@ const Index = () => {
   const { data: popularWatches = [] } = useQuery({
     queryKey: ['popularWatches'],
     queryFn: async () => {
-      const watches = await getAllWatches();
-      return watches.slice(0, 4);
+      const result = await searchAllPlatforms('luxury watch');
+      return (result.all || []).slice(0, 4);
     },
     enabled: !showResults,
     staleTime: 10 * 60 * 1000,
@@ -132,7 +150,7 @@ const Index = () => {
 
       {/* Search Results */}
       {showResults ? (
-        <section className="py-12 md:py-16 px-4 bg-white">
+        <section ref={resultsRef} className="py-12 md:py-16 px-4 bg-white">
           <div className="max-w-6xl mx-auto">
             <div className="mb-8">
               <h2 className="text-xl md:text-2xl font-medium mb-2">
