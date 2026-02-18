@@ -122,7 +122,7 @@ const Index = () => {
                         ${listing.price.toLocaleString()}
                       </span>
                       <Button size="sm" variant={idx === 0 ? "default" : "outline"} asChild className="rounded-lg text-xs px-2.5 md:px-3 shrink-0">
-                        <a href={listing.listing_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                        <a href={listing.affiliate_url || listing.listing_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                           View <ExternalLink className="h-3 w-3" />
                         </a>
                       </Button>

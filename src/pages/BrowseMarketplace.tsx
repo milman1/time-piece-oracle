@@ -276,7 +276,7 @@ const BrowseMarketplace = () => {
                                                         asChild
                                                         className="rounded-lg text-xs px-2.5 md:px-3 shrink-0 h-8 min-w-[52px]"
                                                     >
-                                                        <a href={listing.listing_url || listing.affiliate_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                                        <a href={listing.affiliate_url || listing.listing_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                                                             View <ExternalLink className="h-3 w-3" />
                                                         </a>
                                                     </Button>
@@ -308,7 +308,7 @@ const BrowseMarketplace = () => {
                                                 )}
                                             </div>
                                             <Button size="sm" variant="outline" asChild className="rounded-lg text-xs px-3">
-                                                <a href={watch.listing_url || watch.affiliate_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                                <a href={watch.affiliate_url || watch.listing_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                                                     View <ExternalLink className="h-3 w-3" />
                                                 </a>
                                             </Button>
