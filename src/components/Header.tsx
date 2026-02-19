@@ -25,7 +25,7 @@ export const Header = () => {
   ];
 
   return (
-    <header className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
+    <header className="bg-[var(--navy)]/95 backdrop-blur-md border-b border-white/5 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
         <div className="flex items-center">
           <Logo size="md" variant="header" />
@@ -34,19 +34,19 @@ export const Header = () => {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center space-x-8">
           {navLinks.map(link => (
-            <Link key={link.to} to={link.to} className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link key={link.to} to={link.to} className="text-sm text-white/60 hover:text-white transition-colors tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-3">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2">
+                <Button variant="ghost" className="flex items-center space-x-2 text-white/70 hover:text-white hover:bg-white/10">
                   <User className="h-4 w-4" />
-                  <span className="hidden md:inline">Account</span>
+                  <span className="hidden md:inline text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>Account</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -68,10 +68,10 @@ export const Header = () => {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" asChild className="text-muted-foreground text-sm px-2 md:px-4 hidden sm:inline-flex">
+              <Button variant="ghost" asChild className="text-white/60 hover:text-white hover:bg-white/10 text-sm px-3 hidden sm:inline-flex" style={{ fontFamily: 'Inter, sans-serif' }}>
                 <Link to="/auth">Sign In</Link>
               </Button>
-              <Button asChild className="bg-slate-900 hover:bg-slate-800 text-white text-sm px-3 md:px-4">
+              <Button asChild className="btn-gold text-sm px-4 md:px-5 rounded-lg border-0" style={{ fontFamily: 'Inter, sans-serif' }}>
                 <Link to="/auth?mode=signup">Get Started</Link>
               </Button>
             </>
@@ -80,7 +80,7 @@ export const Header = () => {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 -mr-2 text-foreground"
+            className="md:hidden p-2 -mr-2 text-white/70"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -90,13 +90,14 @@ export const Header = () => {
 
       {/* Mobile drawer */}
       {mobileMenuOpen && (
-        <nav className="md:hidden border-t border-border bg-white px-4 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200">
+        <nav className="md:hidden border-t border-white/5 bg-[var(--navy-light)] px-4 py-3 space-y-1 animate-fade-up">
           {navLinks.map(link => (
             <Link
               key={link.to}
               to={link.to}
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-3 px-2 text-foreground hover:bg-slate-50 rounded-lg text-base font-medium"
+              className="block py-3 px-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg text-base"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               {link.label}
             </Link>
@@ -105,7 +106,8 @@ export const Header = () => {
             <Link
               to="/auth"
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-3 px-2 text-muted-foreground hover:bg-slate-50 rounded-lg text-base"
+              className="block py-3 px-3 text-white/50 hover:text-white/80 hover:bg-white/5 rounded-lg text-base"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               Sign In
             </Link>

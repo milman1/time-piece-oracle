@@ -1,61 +1,64 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Logo } from '@/components/Logo';
 
 const Footer = () => {
   return (
-    <footer className="bg-muted/30 border-t mt-16">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="bg-[var(--navy)] border-t border-white/5">
+      <div className="max-w-6xl mx-auto px-4 py-10 md:py-14">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {/* About */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">About Hours</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              The luxury watch meta-marketplace. Aggregating listings from eBay, Chrono24, WatchBox, and vetted independents.
+          <div className="col-span-2 md:col-span-1">
+            <div className="mb-4">
+              <Logo size="sm" variant="footer" />
+            </div>
+            <p className="text-sm text-white/30 mb-3 leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+              The luxury watch meta-marketplace. Aggregating listings from every major platform.
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-white/15" style={{ fontFamily: 'Inter, sans-serif' }}>
               We may earn a commission when you buy through links on our site.
             </p>
           </div>
 
           {/* For Buyers */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">For Buyers</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/browse" className="text-muted-foreground hover:text-foreground transition-colors">Search Watches</Link></li>
-              <li><Link to="/compare" className="text-muted-foreground hover:text-foreground transition-colors">Compare Prices</Link></li>
-              <li><Link to="/price-alert" className="text-muted-foreground hover:text-foreground transition-colors">Price Alerts</Link></li>
-              <li><Link to="/trusted-sellers" className="text-muted-foreground hover:text-foreground transition-colors">Trusted Sellers</Link></li>
+            <h3 className="text-sm font-semibold text-white/60 mb-4 uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>For Buyers</h3>
+            <ul className="space-y-2.5 text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <li><Link to="/browse" className="text-white/30 hover:text-[var(--gold)] transition-colors">Search Watches</Link></li>
+              <li><Link to="/compare" className="text-white/30 hover:text-[var(--gold)] transition-colors">Compare Prices</Link></li>
+              <li><Link to="/price-alert" className="text-white/30 hover:text-[var(--gold)] transition-colors">Price Alerts</Link></li>
             </ul>
           </div>
 
           {/* For Sellers */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">For Sellers</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/for-sellers" className="text-muted-foreground hover:text-foreground transition-colors">Join Our Network</Link></li>
-              <li><Link to="/for-sellers#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
-              <li><Link to="/seller-application" className="text-muted-foreground hover:text-foreground transition-colors">Apply Now</Link></li>
+            <h3 className="text-sm font-semibold text-white/60 mb-4 uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>For Sellers</h3>
+            <ul className="space-y-2.5 text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <li><Link to="/for-sellers" className="text-white/30 hover:text-[var(--gold)] transition-colors">Join Network</Link></li>
+              <li><Link to="/for-sellers#pricing" className="text-white/30 hover:text-[var(--gold)] transition-colors">Pricing</Link></li>
+              <li><Link to="/seller-application" className="text-white/30 hover:text-[var(--gold)] transition-colors">Apply Now</Link></li>
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Company */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Company</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Affiliate Disclosure</a></li>
+            <h3 className="text-sm font-semibold text-white/60 mb-4 uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>Company</h3>
+            <ul className="space-y-2.5 text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <li><Link to="/blog" className="text-white/30 hover:text-[var(--gold)] transition-colors">Blog</Link></li>
+              <li><a href="#" className="text-white/30 hover:text-[var(--gold)] transition-colors">Privacy</a></li>
+              <li><a href="#" className="text-white/30 hover:text-[var(--gold)] transition-colors">Terms</a></li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-muted-foreground mb-4 md:mb-0">
+        <div className="divider-gold mt-10 mb-6" />
+
+        <div className="flex flex-col md:flex-row justify-between items-center gap-2">
+          <p className="text-xs text-white/20" style={{ fontFamily: 'Inter, sans-serif' }}>
             © {new Date().getFullYear()} Hours. All rights reserved.
           </p>
-          <p className="text-xs text-muted-foreground">
-            Hours aggregates listings from major platforms and vetted independents. We don't hold inventory or process transactions.
+          <p className="text-xs text-white/15 text-center md:text-right" style={{ fontFamily: 'Inter, sans-serif' }}>
+            We aggregate listings — we don't hold inventory or process transactions.
           </p>
         </div>
       </div>
