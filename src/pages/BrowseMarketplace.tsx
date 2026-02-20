@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import {
     Search, SlidersHorizontal, Star, ShieldCheck, ExternalLink,
-    X, ArrowUpDown, TrendingDown
+    X, ArrowUpDown, TrendingDown, Watch as WatchIcon
 } from 'lucide-react';
 import { searchAllPlatforms, Watch, WatchGroup } from '@/services/watchService';
 import { getAllPlatformNames } from '@/services/platformMockService';
@@ -238,13 +238,22 @@ const BrowseMarketplace = () => {
                                 <div key={`${group.brand}-${group.reference}`} className="bg-white rounded-2xl shadow-soft border border-slate-100/60 overflow-hidden transition-all duration-400 hover:shadow-elevated">
                                     <div className="p-4 md:p-6">
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 md:mb-4 gap-1.5 pb-3 border-b border-slate-100/80">
-                                            <div>
-                                                <h3 className="text-[15px] md:text-[17px] font-semibold text-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                    {group.brand} {group.model}
-                                                </h3>
-                                                <p className="text-[12px] text-muted-foreground mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                    Ref: {group.reference} · {group.listingCount} listing{group.listingCount > 1 ? 's' : ''} found
-                                                </p>
+                                            <div className="flex items-center gap-3">
+                                                {group.listings[0]?.image ? (
+                                                    <img src={group.listings[0].image} alt={`${group.brand} ${group.model}`} className="w-14 h-14 rounded-xl object-cover bg-slate-50 shrink-0" />
+                                                ) : (
+                                                    <div className="w-14 h-14 rounded-xl bg-[var(--gold-subtle)] flex items-center justify-center shrink-0">
+                                                        <span className="text-lg font-bold text-[var(--gold)]">{group.brand.charAt(0)}</span>
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <h3 className="text-[15px] md:text-[17px] font-semibold text-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                        {group.brand} {group.model}
+                                                    </h3>
+                                                    <p className="text-[12px] text-muted-foreground mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                        Ref: {group.reference} · {group.listingCount} listing{group.listingCount > 1 ? 's' : ''} found
+                                                    </p>
+                                                </div>
                                             </div>
                                             <div className="flex items-center gap-2 md:gap-3">
                                                 <span className="text-xl md:text-2xl font-semibold stat-number" style={{ fontFamily: 'Inter, sans-serif' }}>${group.lowestPrice.toLocaleString()}</span>
@@ -268,6 +277,9 @@ const BrowseMarketplace = () => {
                                                     key={listing.id}
                                                     className={`flex items-center gap-2 md:gap-3 p-2.5 md:p-3 rounded-xl transition-all duration-300 ${idx === 0 ? 'bg-emerald-50/70 ring-1 ring-emerald-200/50' : 'bg-[var(--warm-50)]/50 hover:bg-[var(--warm-50)]'}`}
                                                 >
+                                                    {listing.image && (
+                                                        <img src={listing.image} alt="" className="w-8 h-8 rounded-lg object-cover bg-slate-50 shrink-0 hidden md:block" />
+                                                    )}
                                                     {idx === 0 && <Badge className="bg-emerald-600 text-white text-[11px] shrink-0 font-medium">Best</Badge>}
                                                     <Badge variant="outline" className="text-[11px] shrink-0 border-slate-200/80">{listing.marketplace}</Badge>
                                                     <span className="text-[12px] md:text-[13px] text-muted-foreground truncate flex-1 min-w-0" style={{ fontFamily: 'Inter, sans-serif' }}>{listing.seller}</span>
@@ -294,30 +306,41 @@ const BrowseMarketplace = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                             {sortedAll.map((watch: Watch) => (
-                                <div key={watch.id} className="bg-white rounded-2xl shadow-soft border border-slate-100/60 p-5 transition-all duration-400 hover:shadow-elevated group">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <Badge variant="outline" className="text-[11px] border-slate-200/80">{watch.marketplace}</Badge>
-                                        {watch.trusted && <ShieldCheck className="h-4 w-4 text-emerald-500" />}
-                                    </div>
-                                    <h3 className="font-semibold text-[15px] mb-1 text-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>{watch.brand} {watch.model}</h3>
-                                    <p className="text-[12px] text-muted-foreground mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>Ref: {watch.reference} · {watch.condition}</p>
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <span className="text-xl font-semibold stat-number" style={{ fontFamily: 'Inter, sans-serif' }}>${watch.price.toLocaleString()}</span>
-                                            {watch.original_price && watch.original_price > watch.price && (
-                                                <span className="text-[12px] text-muted-foreground line-through ml-2" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                    ${watch.original_price.toLocaleString()}
-                                                </span>
-                                            )}
+                                <div key={watch.id} className="bg-white rounded-2xl shadow-soft border border-slate-100/60 overflow-hidden transition-all duration-400 hover:shadow-elevated group">
+                                    {watch.image ? (
+                                        <div className="w-full h-40 bg-slate-50 overflow-hidden">
+                                            <img src={watch.image} alt={`${watch.brand} ${watch.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                         </div>
-                                        <Button size="sm" variant="outline" asChild className="rounded-lg text-[11px] px-3 h-8 border-slate-200/80 hover:border-[var(--gold)] hover:text-[var(--gold)] transition-all duration-300">
-                                            <a href={watch.affiliate_url || watch.listing_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                                                View <ExternalLink className="h-3 w-3" />
-                                            </a>
-                                        </Button>
-                                    </div>
-                                    <div className="mt-2.5 pt-2.5 border-t border-slate-100/60 text-[12px] text-muted-foreground flex items-center gap-1" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                        {watch.seller} · <Star className="h-3 w-3 text-[var(--gold)]" /> {watch.rating}
+                                    ) : (
+                                        <div className="w-full h-40 bg-[var(--warm-50)] flex items-center justify-center">
+                                            <WatchIcon className="h-10 w-10 text-slate-200" />
+                                        </div>
+                                    )}
+                                    <div className="p-5">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <Badge variant="outline" className="text-[11px] border-slate-200/80">{watch.marketplace}</Badge>
+                                            {watch.trusted && <ShieldCheck className="h-4 w-4 text-emerald-500" />}
+                                        </div>
+                                        <h3 className="font-semibold text-[15px] mb-1 text-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>{watch.brand} {watch.model}</h3>
+                                        <p className="text-[12px] text-muted-foreground mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>Ref: {watch.reference} · {watch.condition}</p>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <span className="text-xl font-semibold stat-number" style={{ fontFamily: 'Inter, sans-serif' }}>${watch.price.toLocaleString()}</span>
+                                                {watch.original_price && watch.original_price > watch.price && (
+                                                    <span className="text-[12px] text-muted-foreground line-through ml-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                        ${watch.original_price.toLocaleString()}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <Button size="sm" variant="outline" asChild className="rounded-lg text-[11px] px-3 h-8 border-slate-200/80 hover:border-[var(--gold)] hover:text-[var(--gold)] transition-all duration-300">
+                                                <a href={watch.affiliate_url || watch.listing_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                                    View <ExternalLink className="h-3 w-3" />
+                                                </a>
+                                            </Button>
+                                        </div>
+                                        <div className="mt-2.5 pt-2.5 border-t border-slate-100/60 text-[12px] text-muted-foreground flex items-center gap-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                            {watch.seller} · <Star className="h-3 w-3 text-[var(--gold)]" /> {watch.rating}
+                                        </div>
                                     </div>
                                 </div>
                             ))}

@@ -14,10 +14,10 @@ export const Logo: React.FC<LogoProps> = ({
   className = '',
 }) => {
   const sizeClasses: Record<string, string> = {
-    sm: 'h-7 w-auto',
-    md: 'h-9 w-auto md:h-10',
-    lg: 'h-10 w-auto md:h-12',
-    xl: 'h-12 w-auto md:h-14',
+    sm: 'h-8 w-auto md:h-9',
+    md: 'h-10 w-auto md:h-12',
+    lg: 'h-12 w-auto md:h-14',
+    xl: 'h-14 w-auto md:h-16',
   };
 
   const img = (

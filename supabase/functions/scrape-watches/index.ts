@@ -7,32 +7,47 @@ const corsHeaders = {
 }
 
 // ————————————————————————————————————————————————
-// Firecrawl SEARCH-based watch scraper
+// Firecrawl SEARCH-based watch scraper v2
 //
-// Uses Firecrawl's /v1/search endpoint with site-specific queries
-// for fast, reliable results (2-5s per platform vs 30-60s+ for scrape).
+// Uses Firecrawl's /v1/search endpoint with site-specific queries.
 //
 // Usage:
 //   POST /scrape-watches  { "platform": "chrono24", "query": "rolex submariner" }
 //   POST /scrape-watches  { "platform": "all", "query": "omega speedmaster" }
+//   POST /scrape-watches  { "batch": true }  ← runs all popular brand queries
 // ————————————————————————————————————————————————
 
 const FIRECRAWL_API = 'https://api.firecrawl.dev/v1'
 
-// Site domains for search queries
 const PLATFORM_SITES: Record<string, string> = {
   chrono24: 'chrono24.com',
-  stockx: 'stockx.com',
+  watchbox: 'thewatchbox.com',
   bobs: 'bobswatches.com',
   bezel: 'getbezel.com',
 }
 
 const PLATFORM_NAMES: Record<string, string> = {
   chrono24: 'Chrono24',
-  stockx: 'StockX',
+  watchbox: 'WatchBox',
   bobs: "Bob's Watches",
   bezel: 'Bezel',
 }
+
+// Batch mode: scrape these queries across all platforms
+const BATCH_QUERIES = [
+  'Rolex Submariner',
+  'Rolex Daytona',
+  'Rolex GMT-Master',
+  'Rolex Datejust',
+  'Omega Speedmaster',
+  'Omega Seamaster',
+  'Patek Philippe Nautilus',
+  'Audemars Piguet Royal Oak',
+  'Tudor Black Bay',
+  'Cartier Santos',
+  'IWC Portugieser',
+  'Breitling Navitimer',
+]
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -48,9 +63,64 @@ serve(async (req) => {
       )
     }
 
-    const body = await req.json()
-    const { platform = 'all', query = 'luxury watch' } = body
+    const body = await req.json().catch(() => ({}))
+    const { platform = 'all', query = 'luxury watch', batch = false } = body
 
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Batch mode: run all popular brand queries across all platforms
+    if (batch) {
+      const allPlatforms = Object.keys(PLATFORM_SITES)
+      const batchResults: Record<string, { total_scraped: number; total_saved: number; errors: string[] }> = {}
+
+      for (const p of allPlatforms) {
+        batchResults[p] = { total_scraped: 0, total_saved: 0, errors: [] }
+      }
+
+      // Process queries sequentially to avoid rate limits
+      for (const q of BATCH_QUERIES) {
+        const searchPromises = allPlatforms.map(p => searchPlatform(p, q, apiKey))
+        const searchResults = await Promise.all(searchPromises)
+
+        for (let i = 0; i < allPlatforms.length; i++) {
+          const p = allPlatforms[i]
+          const { listings, errors } = searchResults[i]
+          batchResults[p].total_scraped += listings.length
+          batchResults[p].errors.push(...errors)
+
+          if (listings.length > 0) {
+            const { error: insertError } = await supabase
+              .from('watches')
+              .upsert(listings, { onConflict: 'reference,marketplace,seller', ignoreDuplicates: false })
+
+            if (insertError) {
+              batchResults[p].errors.push(`DB upsert error for "${q}": ${insertError.message}`)
+            } else {
+              batchResults[p].total_saved += listings.length
+            }
+          }
+        }
+
+        // Small delay between batch queries to respect rate limits
+        await new Promise(r => setTimeout(r, 1000))
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          mode: 'batch',
+          queries: BATCH_QUERIES,
+          results: batchResults,
+          timestamp: new Date().toISOString(),
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Single query mode
     const platforms = platform === 'all'
       ? Object.keys(PLATFORM_SITES)
       : [platform]
@@ -63,12 +133,6 @@ serve(async (req) => {
       )
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Search all platforms in parallel
     const searchPromises = platforms.map(p => searchPlatform(p, query, apiKey))
     const searchResults = await Promise.all(searchPromises)
 
@@ -82,7 +146,7 @@ serve(async (req) => {
       if (listings.length > 0) {
         const { error: insertError } = await supabase
           .from('watches')
-          .upsert(listings, { onConflict: 'reference', ignoreDuplicates: true })
+          .upsert(listings, { onConflict: 'reference,marketplace,seller', ignoreDuplicates: false })
 
         if (insertError) {
           results[p].errors.push(`DB upsert error: ${insertError.message}`)
@@ -128,7 +192,7 @@ async function searchPlatform(
       },
       body: JSON.stringify({
         query: searchQuery,
-        limit: 20,
+        limit: 30,
         scrapeOptions: { formats: ['markdown'] },
       }),
     })
@@ -147,7 +211,6 @@ async function searchPlatform(
       return { listings: [], errors }
     }
 
-    // Parse search results into watch listings
     const listings = results
       .map((result: any) => parseSearchResult(result, platformName))
       .filter((w: any) => w !== null && w.price > 100)
@@ -166,43 +229,115 @@ function parseSearchResult(result: any, platformName: string): any | null {
   const title = result.title || ''
   const markdown = result.markdown || ''
   const url = result.url || ''
+  const metadata = result.metadata || {}
 
-  // Extract price from title or markdown
   const price = extractPrice(title + ' ' + markdown)
   if (!price) return null
 
   const brand = parseBrandFromTitle(title)
+  if (brand === 'Unknown') return null // Skip non-watch results
+
   const model = parseModelFromTitle(title, brand)
   const reference = extractReference(title + ' ' + markdown)
+
+  // Extract image from metadata or markdown
+  const image = extractImage(metadata, markdown)
+
+  // Generate a stable unique reference for dedup
+  // Use actual reference if found, otherwise hash from URL
+  const stableRef = reference || hashUrl(url)
+
+  // Extract seller name (more specific than just the platform)
+  const seller = extractSeller(markdown, platformName)
 
   return {
     brand,
     model,
-    reference: reference || '',
+    reference: stableRef,
     price: Math.round(price),
     original_price: null,
     condition: extractCondition(title + ' ' + markdown),
-    seller: platformName,
+    seller,
     rating: null,
     reviews: null,
     marketplace: platformName,
-    image: null,
+    image,
     trusted: true,
     year: extractYear(title + ' ' + markdown),
     description: title.substring(0, 500),
     style: null,
-    movement: null,
+    movement: extractMovement(title + ' ' + markdown),
     strap: null,
     avg_price: null,
     seller_id: null,
-    affiliate_url: url,
+    affiliate_url: url, // Skimlinks will auto-convert this
+    listing_url: url,
+    scraped_at: new Date().toISOString(),
   }
+}
+
+// ——— Image extraction ———
+
+function extractImage(metadata: any, markdown: string): string | null {
+  // 1. Check OG image from metadata
+  if (metadata?.ogImage) return metadata.ogImage
+  if (metadata?.['og:image']) return metadata['og:image']
+  if (metadata?.image) return metadata.image
+
+  // 2. Extract first image from markdown
+  const imgMatch = markdown.match(/!\[.*?\]\((https?:\/\/[^\s)]+)\)/)
+  if (imgMatch) return imgMatch[1]
+
+  // 3. Look for image URLs in the text
+  const urlMatch = markdown.match(/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|webp))/i)
+  if (urlMatch) return urlMatch[1]
+
+  return null
+}
+
+// ——— Seller extraction ———
+
+function extractSeller(markdown: string, platformName: string): string {
+  // Try to find seller name patterns in markdown
+  const sellerPatterns = [
+    /(?:sold by|seller|dealer|offered by)[:\s]*([A-Za-z0-9\s&'.]+)/i,
+    /(?:from|by)\s+([A-Z][A-Za-z0-9\s&'.]+?)(?:\s*[·|\-,])/,
+  ]
+  for (const p of sellerPatterns) {
+    const m = markdown.match(p)
+    if (m && m[1].trim().length > 2 && m[1].trim().length < 50) {
+      return m[1].trim()
+    }
+  }
+  return platformName
+}
+
+// ——— Movement extraction ———
+
+function extractMovement(text: string): string | null {
+  const lower = text.toLowerCase()
+  if (lower.includes('automatic')) return 'Automatic'
+  if (lower.includes('manual') || lower.includes('hand-wound') || lower.includes('hand wound')) return 'Manual'
+  if (lower.includes('quartz')) return 'Quartz'
+  if (lower.includes('spring drive')) return 'Spring Drive'
+  return null
+}
+
+// ——— URL hash for stable reference generation ———
+
+function hashUrl(url: string): string {
+  let hash = 0
+  for (let i = 0; i < url.length; i++) {
+    const char = url.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32-bit integer
+  }
+  return `FC-${Math.abs(hash).toString(36).toUpperCase()}`
 }
 
 // ——— Extraction helpers ———
 
 function extractPrice(text: string): number | null {
-  // Match common price patterns: $12,345 | USD 12345 | 12.345 € | £12,345
   const patterns = [
     /\$\s?([\d,]+(?:\.\d{2})?)/,
     /USD\s?([\d,]+(?:\.\d{2})?)/i,
@@ -217,7 +352,6 @@ function extractPrice(text: string): number | null {
     if (match) {
       const numStr = match[1].replace(/,/g, '')
       const val = parseFloat(numStr)
-      // Reasonable watch price range
       if (val >= 100 && val <= 5_000_000) return val
     }
   }
@@ -225,7 +359,6 @@ function extractPrice(text: string): number | null {
 }
 
 function extractReference(text: string): string {
-  // Common ref patterns: 126610LN, 310.30.42.50.01.001, 5711/1A
   const patterns = [
     /\b(\d{3,6}[A-Z]{0,4}(?:\/\d{1,2}[A-Z]?)?)\b/,
     /\b(\d{3}\.\d{2}\.\d{2}\.\d{2}\.\d{2}\.\d{3})\b/, // Omega style
@@ -259,6 +392,7 @@ function parseBrandFromTitle(title: string): string {
     'Rolex', 'Omega', 'Patek Philippe', 'Audemars Piguet', 'Tudor', 'IWC', 'Cartier',
     'Breitling', 'Hublot', 'TAG Heuer', 'Panerai', 'Jaeger-LeCoultre', 'Vacheron Constantin',
     'A. Lange & Söhne', 'Grand Seiko', 'Zenith', 'Chopard', 'Seiko', 'Tissot',
+    'Hamilton', 'Longines', 'Bell & Ross', 'Girard-Perregaux',
   ]
   for (const b of brands) {
     if (title.toLowerCase().includes(b.toLowerCase())) return b
@@ -267,7 +401,6 @@ function parseBrandFromTitle(title: string): string {
 }
 
 function parseModelFromTitle(title: string, brand: string): string {
-  // Remove brand from title and take meaningful words
   const cleaned = title.replace(new RegExp(brand, 'i'), '').trim()
   const parts = cleaned.split(/[\s,–\-|]+/).filter(Boolean)
   return parts.slice(0, 5).join(' ').substring(0, 60) || title.substring(0, 60)

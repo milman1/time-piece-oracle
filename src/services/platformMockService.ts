@@ -46,7 +46,7 @@ async function searchFromDatabase(marketplace: string, query: string): Promise<W
             .from('watches')
             .select('*')
             .eq('marketplace', marketplace)
-            .limit(20);
+            .limit(50);
 
         if (query.trim()) {
             dbQuery = dbQuery.or(`brand.ilike.%${query}%,model.ilike.%${query}%,description.ilike.%${query}%`);
