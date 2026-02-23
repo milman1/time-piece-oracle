@@ -16,6 +16,76 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
     {
+        slug: 'swiss-watch-industry-study-2025',
+        title: 'Key Takeaways from the 2025 Swiss Watch Industry Study',
+        excerpt: 'Deloitte\'s eleventh annual report reveals a fragile market shaped by tariffs, a booming pre-owned sector, and AI making inroads into product design. We break down the numbers that matter for collectors and buyers.',
+        metaDescription: 'Key findings from the 2025 Deloitte Swiss Watch Industry Study: US tariffs, pre-owned market growth, consumer price sensitivity, and what it means for watch buyers.',
+        date: '2026-02-22',
+        readTime: '9 min read',
+        category: 'Market Analysis',
+        featured: true,
+        keywords: ['swiss watch industry study', 'deloitte watch report 2025', 'swiss watch market', 'luxury watch industry trends', 'watch market analysis 2025'],
+        content: `Deloitte has released its eleventh annual Swiss Watch Industry Study — one of the most comprehensive snapshots of the global luxury watch market. Based on a survey of 111 senior industry executives and 6,500 consumers across 10 key markets, the findings paint a picture of an industry navigating tariffs, shifting consumer habits, and the rise of the pre-owned market.
+
+Here are the key takeaways that matter if you're buying, selling, or collecting watches.
+
+## The Outlook Is Cautious
+
+Over 43% of Swiss watch industry executives hold a negative outlook for their main export markets. The continued strength of the Swiss franc is squeezing exporters, while global demand — particularly in China — has softened.
+
+**What this means for buyers:** Weaker demand = more negotiating power. If you've been waiting for prices to come down on popular models, the current environment favors buyers over sellers.
+
+## US Tariffs Are a Major Wildcard
+
+New US tariffs — 39% imposed since August — are expected to lead to substantial price increases for leading Swiss brands sold in the US market. This could curb demand domestically and push more buyers toward the pre-owned market where tariffs don't apply.
+
+**Key numbers:**
+- **39%** — new tariff rate on Swiss watches entering the US
+- **5-15%** — expected retail price increases for major brands
+- **Pre-owned is exempt** — another reason to shop secondary
+
+## The Pre-Owned Market Is Booming
+
+The second-hand watch market continues its explosive growth, driven primarily by price-conscious consumers. Nearly 58% of respondents are unwilling to spend more than 1,500 Swiss francs (~$1,700 USD) on a new traditional watch — making the pre-owned market the natural alternative for accessing luxury brands.
+
+This is exactly the trend that platforms like Hours, Chrono24, WatchBox, and Bob's Watches are built for: making the pre-owned market transparent, competitive, and safe.
+
+## Consumer Behavior Is Shifting
+
+### Price sensitivity is rising
+Consumers are more price-conscious than ever. The study found that price is the decisive factor for the majority of buyers, with most unwilling to pay premium prices for new watches when pre-owned alternatives are available.
+
+### Smartwatches dominate younger demographics
+Smartwatches continue to gain share, especially among women and Gen Z buyers. This is creating a generational divide between traditional watchmaking enthusiasts and tech-forward wearers.
+
+### In-store still matters
+Over 60% of consumers still prefer buying watches in physical stores. However, the research phase happens online — making platforms like Hours critical for the discovery and comparison step.
+
+## AI Is Entering Watch Design
+
+Nearly 29% of brands plan to use artificial intelligence in product design — up from 20% in 2023. While this doesn't change anything for the pre-owned market today, it signals that the industry is embracing technology more seriously.
+
+## Retail Strategy: Multi-Brand Wins
+
+While 41% of executives plan to open new mono-brand or flagship stores, consumers clearly prefer multi-brand stores (38% vs. 23% for mono-brand boutiques). This validates the meta-marketplace model — buyers want to compare across brands and platforms in one place.
+
+## Growth Markets to Watch
+
+- **India** remains the fastest-growing market for Swiss watches
+- **Mexico** is emerging as a dynamic center in Latin America
+- **China** is softening, creating buying opportunities for collectors
+
+## What This Means for You
+
+If you're a watch buyer or collector, the 2025 study confirms several trends that work in your favor:
+
+- **Prices are under pressure** — tariffs and weak demand create buying opportunities
+- **Pre-owned is the smart play** — exempt from tariffs, supported by growing infrastructure
+- **Compare before you buy** — use meta-search tools like Hours to find the best price across all platforms
+
+The full report is available from Deloitte. Enter your email below to receive our curated summary with the key data points every collector should know.`
+    },
+    {
         slug: 'rolex-submariner-best-price-2026',
         title: 'Rolex Submariner: Where to Find the Best Price in 2026',
         excerpt: 'We tracked thousands of Submariner listings across eBay, Chrono24, WatchBox and independent dealers to find who consistently offers the lowest prices.',
@@ -65,7 +135,7 @@ Use a meta-search tool like Hours to compare real-time prices across all platfor
         date: '2026-02-18',
         readTime: '10 min read',
         category: 'Buying Guide',
-        featured: true,
+        featured: false,
         keywords: ['omega speedmaster price', 'buy omega speedmaster', 'moonwatch price', 'speedmaster buying guide'],
         content: `The Omega Speedmaster Professional "Moonwatch" is one of the most storied watches in horological history. First worn on the moon in 1969, it remains one of the best values in luxury watchmaking.
 
