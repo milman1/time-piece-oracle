@@ -38,7 +38,7 @@ serve(async (req) => {
     // Send welcome email via Resend
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (resendKey) {
-      const fromEmail = Deno.env.get('RESEND_FROM_EMAIL') || 'Hours <hello@hoursapp.com>'
+      const fromEmail = Deno.env.get('RESEND_FROM_EMAIL') || 'Hours <hello@hello.gethoursapp.com>'
 
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
