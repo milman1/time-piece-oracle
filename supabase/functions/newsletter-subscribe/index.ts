@@ -2,55 +2,55 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 serve(async (req) => {
-    if (req.method === 'OPTIONS') {
-        return new Response(null, { headers: corsHeaders })
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
+
+  try {
+    const { email, source = 'blog' } = await req.json()
+
+    if (!email || !email.includes('@')) {
+      return new Response(
+        JSON.stringify({ error: 'Valid email required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    try {
-        const { email, source = 'blog' } = await req.json()
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-        if (!email || !email.includes('@')) {
-            return new Response(
-                JSON.stringify({ error: 'Valid email required' }),
-                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            )
-        }
+    // Save to newsletter_subscribers table
+    const { error: dbError } = await supabase
+      .from('newsletter_subscribers')
+      .upsert({ email: email.toLowerCase().trim(), source }, { onConflict: 'email' })
 
-        const supabase = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        )
+    if (dbError) {
+      console.error('DB error:', dbError)
+    }
 
-        // Save to newsletter_subscribers table
-        const { error: dbError } = await supabase
-            .from('newsletter_subscribers')
-            .upsert({ email: email.toLowerCase().trim(), source }, { onConflict: 'email' })
+    // Send welcome email via Resend
+    const resendKey = Deno.env.get('RESEND_API_KEY')
+    if (resendKey) {
+      const fromEmail = Deno.env.get('RESEND_FROM_EMAIL') || 'Hours <hello@hoursapp.com>'
 
-        if (dbError) {
-            console.error('DB error:', dbError)
-        }
-
-        // Send welcome email via Resend
-        const resendKey = Deno.env.get('RESEND_API_KEY')
-        if (resendKey) {
-            const fromEmail = Deno.env.get('RESEND_FROM_EMAIL') || 'Hours <hello@hours.com>'
-
-            await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${resendKey}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    from: fromEmail,
-                    to: email.toLowerCase().trim(),
-                    subject: 'Welcome to Hours — Your Swiss Watch Market Report',
-                    html: `
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: email.toLowerCase().trim(),
+          subject: 'Welcome to Hours — Your Swiss Watch Market Report',
+          html: `
             <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #1a1a1a;">
               <h1 style="font-size: 24px; font-weight: 600; margin-bottom: 16px;">Welcome to Hours</h1>
               <p style="font-size: 15px; line-height: 1.7; color: #555;">
@@ -85,19 +85,19 @@ serve(async (req) => {
               </p>
             </div>
           `,
-                }),
-            })
-        }
-
-        return new Response(
-            JSON.stringify({ success: true, message: 'Subscribed successfully' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-    } catch (error: unknown) {
-        console.error('Newsletter error:', error)
-        return new Response(
-            JSON.stringify({ error: 'Failed to subscribe', message: error instanceof Error ? error.message : 'Unknown error' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        }),
+      })
     }
+
+    return new Response(
+      JSON.stringify({ success: true, message: 'Subscribed successfully' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  } catch (error: unknown) {
+    console.error('Newsletter error:', error)
+    return new Response(
+      JSON.stringify({ error: 'Failed to subscribe', message: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
 })
