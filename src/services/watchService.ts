@@ -300,6 +300,31 @@ export async function searchAllPlatforms(
   const results = await Promise.all(promises);
   let all = results.flat();
 
+  // ——— Luxury brand whitelist ———
+  // Only show watches from reputable/luxury brands
+  const LUXURY_BRANDS = new Set([
+    'rolex', 'omega', 'patek philippe', 'audemars piguet', 'vacheron constantin',
+    'a. lange & söhne', 'a. lange & sohne', 'a lange & sohne',
+    'jaeger-lecoultre', 'jaeger lecoultre', 'cartier', 'iwc', 'breitling',
+    'tudor', 'tag heuer', 'grand seiko', 'seiko', 'zenith', 'hublot',
+    'panerai', 'blancpain', 'breguet', 'chopard', 'girard-perregaux',
+    'girard perregaux', 'ulysse nardin', 'piaget', 'bvlgari', 'bulgari',
+    'bell & ross', 'nomos', 'glashutte original', 'glashütte original',
+    'montblanc', 'oris', 'longines', 'tissot', 'hamilton', 'rado',
+    'baume & mercier', 'frederique constant', 'maurice lacroix',
+    'mido', 'certina', 'sinn', 'damasko', 'junghans',
+    'f.p. journe', 'fp journe', 'mb&f', 'h. moser & cie',
+    'richard mille', 'jacob & co', 'franck muller',
+    'roger dubuis', 'corum', 'graham', 'ball', 'doxa',
+    'gerald genta', 'gerald charles', 'de bethune',
+    'laurent ferrier', 'greubel forsey', 'bovet',
+  ]);
+
+  all = all.filter(w => {
+    const brand = (w.brand || '').toLowerCase().trim();
+    return LUXURY_BRANDS.has(brand);
+  });
+
   // Apply price filters
   if (options?.minPrice) all = all.filter(w => w.price >= options.minPrice!);
   if (options?.maxPrice) all = all.filter(w => w.price <= options.maxPrice!);
