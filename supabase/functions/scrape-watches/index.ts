@@ -279,18 +279,45 @@ function parseSearchResult(result: any, platformName: string): any | null {
 // ——— Image extraction ———
 
 function extractImage(metadata: any, markdown: string): string | null {
-  // 1. Check OG image from metadata
-  if (metadata?.ogImage) return metadata.ogImage
-  if (metadata?.['og:image']) return metadata['og:image']
-  if (metadata?.image) return metadata.image
+  // Helper: filter out icons, logos, and tiny images
+  const isValidImage = (url: string): boolean => {
+    if (!url || url.length < 10) return false
+    const lower = url.toLowerCase()
+    if (lower.includes('favicon') || lower.includes('logo') || lower.includes('icon')
+      || lower.includes('sprite') || lower.includes('1x1') || lower.includes('pixel')
+      || lower.includes('blank') || lower.includes('spacer') || lower.includes('tracking')) return false
+    return /\.(jpg|jpeg|png|webp|avif)/i.test(lower) || lower.includes('/image')
+  }
 
-  // 2. Extract first image from markdown
-  const imgMatch = markdown.match(/!\[.*?\]\((https?:\/\/[^\s)]+)\)/)
-  if (imgMatch) return imgMatch[1]
+  // 1. Check all metadata fields
+  const metaFields = ['ogImage', 'og:image', 'image', 'twitter:image', 'twitter:image:src',
+    'thumbnailUrl', 'thumbnail', 'sourceUrl', 'primaryImageOfPage']
+  for (const field of metaFields) {
+    const val = metadata?.[field]
+    if (val && typeof val === 'string' && isValidImage(val)) return val
+    // Handle object format { url: "..." }
+    if (val && typeof val === 'object' && val.url && isValidImage(val.url)) return val.url
+  }
 
-  // 3. Look for image URLs in the text
-  const urlMatch = markdown.match(/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|webp))/i)
-  if (urlMatch) return urlMatch[1]
+  // 2. Check metadata.images array
+  if (Array.isArray(metadata?.images)) {
+    for (const img of metadata.images) {
+      const url = typeof img === 'string' ? img : img?.url || img?.src
+      if (url && isValidImage(url)) return url
+    }
+  }
+
+  // 3. Extract first valid image from markdown
+  const imgMatches = markdown.matchAll(/!\[.*?\]\((https?:\/\/[^\s)]+)\)/g)
+  for (const m of imgMatches) {
+    if (isValidImage(m[1])) return m[1]
+  }
+
+  // 4. Look for image URLs in the text
+  const urlMatches = markdown.matchAll(/(https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp|avif)(?:\?[^\s"'<>]*)?)/gi)
+  for (const m of urlMatches) {
+    if (isValidImage(m[1])) return m[1]
+  }
 
   return null
 }

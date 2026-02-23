@@ -1,60 +1,83 @@
 
 import React, { useState } from 'react';
-import { getWatchImage } from '@/services/imageService';
+import { Watch as WatchIcon } from 'lucide-react';
 
 interface WatchImageProps {
-  reference: string;
-  brand: string;
-  model: string;
+  src?: string | null;
+  alt: string;
+  brand?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
-export const WatchImage = ({ reference, brand, model, className = '' }: WatchImageProps) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  
-  const watchImage = getWatchImage(reference);
-  
-  const handleLoad = () => {
-    setIsLoading(false);
-  };
-  
-  const handleError = () => {
-    setIsLoading(false);
-    setHasError(true);
-  };
+const sizeMap = {
+  sm: { container: 'w-8 h-8', icon: 'h-3 w-3', text: 'text-[10px]', rounded: 'rounded-lg' },
+  md: { container: 'w-14 h-14', icon: 'h-5 w-5', text: 'text-lg', rounded: 'rounded-xl' },
+  lg: { container: 'w-20 h-20', icon: 'h-8 w-8', text: 'text-2xl', rounded: 'rounded-2xl' },
+  xl: { container: 'w-full aspect-square', icon: 'h-16 w-16', text: 'text-4xl', rounded: 'rounded-2xl' },
+};
 
-  if (hasError) {
+// Brand-specific accent colors for fallback badges
+const brandColors: Record<string, string> = {
+  'Rolex': '#006039',
+  'Omega': '#1a1a2e',
+  'Patek Philippe': '#1a3a5c',
+  'Audemars Piguet': '#1a1a2e',
+  'Tudor': '#8B0000',
+  'Cartier': '#8B0000',
+  'IWC': '#1a1a2e',
+  'Breitling': '#FFD700',
+  'Tag Heuer': '#006039',
+  'Grand Seiko': '#1a3a5c',
+};
+
+const WatchImage: React.FC<WatchImageProps> = ({
+  src,
+  alt,
+  brand = '',
+  size = 'md',
+  className = '',
+}) => {
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(!!src);
+  const s = sizeMap[size];
+
+  const brandInitial = brand.charAt(0).toUpperCase();
+  const brandColor = brandColors[brand] || 'var(--gold)';
+
+  // No image or load failed → show branded fallback
+  if (!src || hasError) {
     return (
-      <div className={`bg-slate-100 rounded-lg flex items-center justify-center ${className}`}>
-        <div className="text-center p-4">
-          <div className="w-12 h-12 bg-slate-300 rounded-full mx-auto mb-2"></div>
-          <p className="text-xs text-slate-500 font-medium">{brand}</p>
-          <p className="text-xs text-slate-400">{model}</p>
-        </div>
+      <div
+        className={`${s.container} ${s.rounded} flex items-center justify-center shrink-0 ${className}`}
+        style={{ backgroundColor: brandColor + '12' }}
+      >
+        {brandInitial ? (
+          <span className={`${s.text} font-bold`} style={{ color: brandColor }}>
+            {brandInitial}
+          </span>
+        ) : (
+          <WatchIcon className={`${s.icon} text-slate-300`} />
+        )}
       </div>
     );
   }
 
   return (
-    <div className={`relative overflow-hidden rounded-lg ${className}`}>
+    <div className={`${s.container} ${s.rounded} overflow-hidden bg-slate-50 shrink-0 relative ${className}`}>
       {isLoading && (
-        <div className="absolute inset-0 bg-slate-100 animate-pulse flex items-center justify-center">
-          <div className="w-8 h-8 bg-slate-300 rounded-full"></div>
-        </div>
+        <div className="absolute inset-0 bg-slate-100 animate-pulse" />
       )}
       <img
-        src={watchImage.url}
-        alt={watchImage.alt}
-        width={watchImage.width}
-        height={watchImage.height}
-        onLoad={handleLoad}
-        onError={handleError}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${
-          isLoading ? 'opacity-0' : 'opacity-100'
-        }`}
+        src={src}
+        alt={alt}
+        className="w-full h-full object-cover"
         loading="lazy"
+        onError={() => setHasError(true)}
+        onLoad={() => setIsLoading(false)}
       />
     </div>
   );
 };
+
+export default WatchImage;
