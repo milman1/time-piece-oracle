@@ -5,8 +5,9 @@ import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Clock, Search } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import { getPostBySlug, blogPosts } from '@/data/blogPosts';
+import EmailCapture from '@/components/EmailCapture';
 import NotFound from './NotFound';
 
 const BlogArticle = () => {
@@ -122,21 +123,9 @@ const BlogArticle = () => {
                         {renderContent(post.content)}
                     </div>
 
-                    {/* CTA */}
-                    <div className="bg-white rounded-2xl shadow-soft border border-slate-100/60 p-6 text-center mb-12">
-                        <h3 className="text-lg font-semibold text-foreground mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
-                            Ready to find the best price?
-                        </h3>
-                        <p className="text-[14px] text-muted-foreground mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
-                            Compare real-time prices across 8 platforms in one search.
-                        </p>
-                        <Link
-                            to="/browse"
-                            className="inline-flex items-center gap-2 px-5 py-2.5 btn-navy text-white text-[13px] font-medium rounded-xl transition-all duration-300 hover:opacity-90"
-                            style={{ fontFamily: 'Inter, sans-serif' }}
-                        >
-                            <Search className="h-3.5 w-3.5" /> Search the Meta-Marketplace
-                        </Link>
+                    {/* Email Capture */}
+                    <div className="mb-12">
+                        <EmailCapture source={`blog:${post.slug}`} />
                     </div>
 
                     {/* Related posts */}

@@ -5,8 +5,9 @@ import { Helmet } from 'react-helmet-async';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Calendar, Clock, ArrowRight, TrendingUp } from 'lucide-react';
+import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import { blogPosts } from '@/data/blogPosts';
+import EmailCapture from '@/components/EmailCapture';
 
 const Blog = () => {
   const [activeCategory, setActiveCategory] = useState('All');
@@ -115,17 +116,13 @@ const Blog = () => {
             </section>
           )}
 
-          {/* Newsletter CTA */}
-          <section className="bg-white rounded-2xl shadow-soft border border-slate-100/60 p-8 text-center">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <TrendingUp className="h-5 w-5 text-[var(--gold)]" />
-              <h3 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>
-                Stay Updated
-              </h3>
-            </div>
-            <p className="text-[14px] text-muted-foreground max-w-xl mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
-              Weekly insights on luxury watch pricing, market analysis, and investment opportunities.
-            </p>
+          {/* Newsletter Email Capture */}
+          <section>
+            <EmailCapture
+              source="blog-listing"
+              heading="Stay updated on watch market trends"
+              description="Weekly insights on luxury watch pricing, market analysis, and investment opportunities — delivered to your inbox."
+            />
           </section>
         </div>
       </main>
