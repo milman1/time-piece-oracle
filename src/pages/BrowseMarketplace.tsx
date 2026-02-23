@@ -12,7 +12,7 @@ import {
     Search, SlidersHorizontal, Star, ShieldCheck, ExternalLink,
     X, ArrowUpDown, TrendingDown, Watch as WatchIcon
 } from 'lucide-react';
-import { searchAllPlatforms, Watch, WatchGroup } from '@/services/watchService';
+import { searchAllPlatforms, slugify, Watch, WatchGroup } from '@/services/watchService';
 import { getAllPlatformNames } from '@/services/platformMockService';
 
 type SortOption = 'price-asc' | 'price-desc' | 'most-listings';
@@ -247,9 +247,11 @@ const BrowseMarketplace = () => {
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <h3 className="text-[15px] md:text-[17px] font-semibold text-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                        {group.brand} {group.model}
-                                                    </h3>
+                                                    <Link to={`/watch/${slugify(group.brand)}/${slugify(group.model)}/${encodeURIComponent(group.reference)}`} className="hover:text-[var(--gold)] transition-colors">
+                                                        <h3 className="text-[15px] md:text-[17px] font-semibold text-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                            {group.brand} {group.model}
+                                                        </h3>
+                                                    </Link>
                                                     <p className="text-[12px] text-muted-foreground mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
                                                         Ref: {group.reference} · {group.listingCount} listing{group.listingCount > 1 ? 's' : ''} found
                                                     </p>

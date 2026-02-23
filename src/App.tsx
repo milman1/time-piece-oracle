@@ -11,6 +11,7 @@ import ProductDetail from "./pages/ProductDetail";
 import LegacyProductRedirect from "./pages/LegacyProductRedirect";
 import TrustedSellers from "./pages/TrustedSellers";
 import Blog from "./pages/Blog";
+import BlogArticle from "./pages/BlogArticle";
 import Go from "./pages/Go";
 import Auth from "./pages/Auth";
 import AffiliatePricing from "./pages/AffiliatePricing";
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/watch/:model" element={<LegacyProductRedirect />} />
             <Route path="/trusted-sellers" element={<TrustedSellers />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogArticle />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/go" element={<Go />} />
             <Route path="/partners/pricing" element={<AffiliatePricing />} />
