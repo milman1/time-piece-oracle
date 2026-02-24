@@ -8,7 +8,7 @@ interface LogoProps {
 }
 
 const IconSvg: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="0 0 512 512" fill="none" className={className} aria-hidden="true">
+  <svg viewBox="70 210 70 100" fill="none" className={className} aria-hidden="true">
     <line x1="81" y1="219" x2="129" y2="294" stroke="#FFFFFF" strokeWidth="12" strokeLinecap="round"/>
     <line x1="84" y1="260" x2="129" y2="294" stroke="#FFFFFF" strokeWidth="12" strokeLinecap="round"/>
     <line x1="97" y1="270" x2="120" y2="303" stroke="#FFFFFF" strokeWidth="8" strokeLinecap="round" opacity="0.95"/>
