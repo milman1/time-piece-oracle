@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Watch, slugify } from '@/services/watchService';
-import { WatchImage } from './WatchImage';
+import WatchImage from './WatchImage';
 
 interface WatchGridProps {
   watches: Watch[];
@@ -53,9 +53,10 @@ export const WatchGrid = ({ watches }: WatchGridProps) => {
               {/* Watch Image */}
               <div className="flex-shrink-0">
                 <WatchImage
-                  reference={watch.reference}
+                  src={watch.image}
+                  alt={`${watch.brand} ${watch.model}`}
                   brand={watch.brand}
-                  model={watch.model}
+                  size="lg"
                   className="w-24 h-24 rounded-lg shadow-sm"
                 />
               </div>
