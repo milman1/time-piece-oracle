@@ -22,7 +22,7 @@ export const Logo: React.FC<LogoProps> = ({
 
   const img = (
     <img
-      src="/lovable-uploads/hours-logo.jpg"
+      src="/lovable-uploads/hours-logo-transparent.png"
       alt="Hours — Luxury Watch Meta-Marketplace"
       className={`${sizeClasses[size] || sizeClasses.md} ${className}`}
       loading="lazy"
