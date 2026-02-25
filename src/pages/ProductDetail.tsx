@@ -16,7 +16,7 @@ import {
 import PriceHistoryChart from '@/components/PriceHistoryChart';
 import { fetchPriceHistory } from '@/services/priceService';
 import {
-  getWatchByReference, searchAllPlatforms, slugify,
+  getWatchByReference, searchAllPlatforms, slugify, buildAffiliateLink,
   Watch, WatchGroup
 } from '@/services/watchService';
 
@@ -208,7 +208,7 @@ const ProductDetail = () => {
                     asChild
                     className={`rounded-lg text-[11px] px-2.5 md:px-3 shrink-0 h-8 min-w-[52px] transition-all duration-300 ${idx === 0 ? 'btn-navy border-0' : 'border-slate-200/80 hover:border-[var(--gold)] hover:text-[var(--gold)]'}`}
                   >
-                    <a href={listing.affiliate_url || listing.listing_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                    <a href={buildAffiliateLink(listing)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                       View <ExternalLink className="h-3 w-3" />
                     </a>
                   </Button>

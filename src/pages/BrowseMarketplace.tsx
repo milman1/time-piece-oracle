@@ -12,7 +12,7 @@ import {
     Search, SlidersHorizontal, Star, ShieldCheck, ExternalLink,
     X, ArrowUpDown, TrendingDown, Watch as WatchIcon
 } from 'lucide-react';
-import { searchAllPlatforms, slugify, Watch, WatchGroup } from '@/services/watchService';
+import { searchAllPlatforms, slugify, buildAffiliateLink, Watch, WatchGroup } from '@/services/watchService';
 import { getAllPlatformNames } from '@/services/platformMockService';
 
 type SortOption = 'price-asc' | 'price-desc' | 'most-listings';
@@ -294,7 +294,7 @@ const BrowseMarketplace = () => {
                                                         asChild
                                                         className={`rounded-lg text-[11px] px-2.5 md:px-3 shrink-0 h-8 min-w-[52px] transition-all duration-300 ${idx === 0 ? 'btn-navy border-0' : 'border-slate-200/80 hover:border-[var(--gold)] hover:text-[var(--gold)]'}`}
                                                     >
-                                                        <a href={listing.affiliate_url || listing.listing_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                                        <a href={buildAffiliateLink(listing)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                                                             View <ExternalLink className="h-3 w-3" />
                                                         </a>
                                                     </Button>
@@ -335,7 +335,7 @@ const BrowseMarketplace = () => {
                                                 )}
                                             </div>
                                             <Button size="sm" variant="outline" asChild className="rounded-lg text-[11px] px-3 h-8 border-slate-200/80 hover:border-[var(--gold)] hover:text-[var(--gold)] transition-all duration-300">
-                                                <a href={watch.affiliate_url || watch.listing_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                                <a href={buildAffiliateLink(watch)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                                                     View <ExternalLink className="h-3 w-3" />
                                                 </a>
                                             </Button>

@@ -15,15 +15,15 @@ serve(async (req) => {
   try {
     const url = new URL(req.url)
     const watchId = url.searchParams.get('watch_id')
-    const sellerId = url.searchParams.get('seller_id')
+    const sellerId = url.searchParams.get('seller_id') || null
     const utmSource = url.searchParams.get('utm_source')
     const utmMedium = url.searchParams.get('utm_medium')
     const utmCampaign = url.searchParams.get('utm_campaign')
 
-    if (!watchId || !sellerId) {
-      return new Response('Missing required parameters: watch_id and seller_id', { 
+    if (!watchId) {
+      return new Response('Missing required parameter: watch_id', {
         status: 400,
-        headers: corsHeaders 
+        headers: corsHeaders
       })
     }
 
@@ -38,12 +38,12 @@ serve(async (req) => {
     const userAgent = req.headers.get('user-agent') || 'unknown'
     const referrer = req.headers.get('referer') || 'unknown'
 
-    // Record the affiliate click
+    // Record the affiliate click (seller_id may be null)
     const { error: clickError } = await supabase
       .from('affiliate_clicks')
       .insert({
         watch_id: parseInt(watchId),
-        seller_id: sellerId,
+        seller_id: sellerId || null,
         utm_source: utmSource,
         utm_medium: utmMedium,
         utm_campaign: utmCampaign,
@@ -57,71 +57,75 @@ serve(async (req) => {
       // Continue with redirect even if click recording fails
     }
 
-    // Get the watch and seller information to build the redirect URL
+    // Get the watch record (includes affiliate_url and listing_url)
     const { data: watch, error: watchError } = await supabase
       .from('watches')
-      .select('brand, model, reference, affiliate_url')
+      .select('brand, model, reference, affiliate_url, listing_url, marketplace')
       .eq('id', parseInt(watchId))
       .single()
 
     if (watchError || !watch) {
       console.error('Error fetching watch:', watchError)
-      return new Response('Watch not found', { 
+      return new Response('Watch not found', {
         status: 404,
-        headers: corsHeaders 
+        headers: corsHeaders
       })
     }
 
-    const { data: seller, error: sellerError } = await supabase
-      .from('sellers')
-      .select('name, affiliate_base_url')
-      .eq('id', sellerId)
-      .single()
+    // Build the redirect URL
+    // Priority: 1) watch.affiliate_url  2) seller-based URL  3) watch.listing_url  4) search fallback
+    let redirectUrl = watch.affiliate_url || null
 
-    if (sellerError || !seller) {
-      console.error('Error fetching seller:', sellerError)
-      return new Response('Seller not found', { 
-        status: 404,
-        headers: corsHeaders 
-      })
-    }
+    // If no direct affiliate URL and we have a seller_id, try the sellers table
+    if (!redirectUrl && sellerId) {
+      const { data: seller } = await supabase
+        .from('sellers')
+        .select('name, affiliate_base_url')
+        .eq('id', sellerId)
+        .single()
 
-    // Build the affiliate URL
-    let redirectUrl = watch.affiliate_url
+      if (seller?.affiliate_base_url) {
+        const searchQuery = encodeURIComponent(`${watch.brand} ${watch.model} ${watch.reference}`)
 
-    // If no direct affiliate URL, construct from seller base URL
-    if (!redirectUrl && seller.affiliate_base_url) {
-      const searchQuery = encodeURIComponent(`${watch.brand} ${watch.model} ${watch.reference}`)
-      
-      if (seller.name === 'Chrono24') {
-        redirectUrl = `${seller.affiliate_base_url}?query=${searchQuery}`
-      } else if (seller.name === 'eBay') {
-        redirectUrl = `${seller.affiliate_base_url}?_nkw=${searchQuery}`
-      } else if (seller.name === 'WatchBox') {
-        redirectUrl = `${seller.affiliate_base_url}?search=${searchQuery}`
-      } else if (seller.name === 'Crown & Caliber') {
-        redirectUrl = `${seller.affiliate_base_url}?q=${searchQuery}`
-      } else if (seller.name === 'Hodinkee Shop') {
-        redirectUrl = `${seller.affiliate_base_url}?q=${searchQuery}`
-      } else {
-        redirectUrl = `https://www.google.com/search?q=${searchQuery} buy`
+        if (seller.name === 'Chrono24') {
+          redirectUrl = `${seller.affiliate_base_url}?query=${searchQuery}`
+        } else if (seller.name === 'eBay') {
+          redirectUrl = `${seller.affiliate_base_url}?_nkw=${searchQuery}`
+        } else if (seller.name === 'WatchBox') {
+          redirectUrl = `${seller.affiliate_base_url}?search=${searchQuery}`
+        } else if (seller.name === 'Crown & Caliber') {
+          redirectUrl = `${seller.affiliate_base_url}?q=${searchQuery}`
+        } else if (seller.name === 'Hodinkee Shop') {
+          redirectUrl = `${seller.affiliate_base_url}?q=${searchQuery}`
+        } else {
+          redirectUrl = `${seller.affiliate_base_url}?q=${searchQuery}`
+        }
       }
+    }
+
+    // Fall back to the listing URL stored on the watch
+    if (!redirectUrl) {
+      redirectUrl = watch.listing_url || null
+    }
+
+    // Last resort: Google search for the watch
+    if (!redirectUrl) {
+      const searchQuery = encodeURIComponent(`${watch.brand} ${watch.model} ${watch.reference} buy`)
+      redirectUrl = `https://www.google.com/search?q=${searchQuery}`
     }
 
     // Add UTM parameters to the redirect URL
     if (redirectUrl && (utmSource || utmMedium || utmCampaign)) {
-      const redirectUrlObj = new URL(redirectUrl)
-      if (utmSource) redirectUrlObj.searchParams.set('utm_source', utmSource)
-      if (utmMedium) redirectUrlObj.searchParams.set('utm_medium', utmMedium)
-      if (utmCampaign) redirectUrlObj.searchParams.set('utm_campaign', utmCampaign)
-      redirectUrl = redirectUrlObj.toString()
-    }
-
-    if (!redirectUrl) {
-      return new Response('No redirect URL available', { 
-        status: 404,
-        headers: corsHeaders 
-      })
+      try {
+        const redirectUrlObj = new URL(redirectUrl)
+        if (utmSource) redirectUrlObj.searchParams.set('utm_source', utmSource)
+        if (utmMedium) redirectUrlObj.searchParams.set('utm_medium', utmMedium)
+        if (utmCampaign) redirectUrlObj.searchParams.set('utm_campaign', utmCampaign)
+        redirectUrl = redirectUrlObj.toString()
+      } catch {
+        // If URL parsing fails, just use the raw URL
+        console.warn('Failed to parse redirect URL for UTM params:', redirectUrl)
+      }
     }
 
     // Perform the redirect
@@ -135,9 +139,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Affiliate redirect error:', error)
-    return new Response('Internal server error', { 
+    return new Response('Internal server error', {
       status: 500,
-      headers: corsHeaders 
+      headers: corsHeaders
     })
   }
 })
