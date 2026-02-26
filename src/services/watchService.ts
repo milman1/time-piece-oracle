@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { searchEbay } from './ebayService';
-import { searchChrono24, searchWatchBox, searchBobsWatches, searchHodinkee, searchCrownCaliber } from './platformMockService';
+import { searchChrono24, searchWatchBox, searchBobsWatches, searchHodinkee, searchCrownCaliber, searchVettedDealers } from './platformMockService';
 
 /** Toggle mock vs. live queries */
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
@@ -289,6 +289,7 @@ export async function searchAllPlatforms(
   if (shouldInclude("Bob's Watches")) promises.push(searchBobsWatches(query).catch(() => []));
   if (shouldInclude('Hodinkee')) promises.push(searchHodinkee(query).catch(() => []));
   if (shouldInclude('Crown & Caliber')) promises.push(searchCrownCaliber(query).catch(() => []));
+  if (shouldInclude('Vetted Dealers')) promises.push(searchVettedDealers(query).catch(() => []));
 
   // Also include Supabase/mock watches
   if (query.trim()) {

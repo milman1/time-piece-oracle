@@ -233,98 +233,154 @@ const BrowseMarketplace = () => {
                             <p className="text-[14px] text-muted-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>Searching across {platformNames.length} platforms…</p>
                         </div>
                     ) : viewMode === 'grouped' ? (
-                        <div className="space-y-3">
-                            {sortedGrouped.map((group: WatchGroup) => (
-                                <div key={`${group.brand}-${group.reference}`} className="bg-white rounded-2xl shadow-soft border border-slate-100/60 overflow-hidden transition-all duration-400 hover:shadow-elevated">
-                                    <div className="p-4 md:p-6">
-                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 md:mb-4 gap-1.5 pb-3 border-b border-slate-100/80">
-                                            <div className="flex items-center gap-3">
-                                                {group.listings[0]?.image ? (
-                                                    <img src={group.listings[0].image} alt={`${group.brand} ${group.model}`} className="w-14 h-14 rounded-xl object-cover bg-slate-50 shrink-0" />
-                                                ) : (
-                                                    <div className="w-14 h-14 rounded-xl bg-[var(--gold-subtle)] flex items-center justify-center shrink-0">
-                                                        <span className="text-lg font-bold text-[var(--gold)]">{group.brand.charAt(0)}</span>
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <Link to={`/watch/${slugify(group.brand)}/${slugify(group.model)}/${encodeURIComponent(group.reference)}`} className="hover:text-[var(--gold)] transition-colors">
-                                                        <h3 className="text-[15px] md:text-[17px] font-semibold text-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                            {group.brand} {group.model}
-                                                        </h3>
-                                                    </Link>
-                                                    <p className="text-[12px] text-muted-foreground mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                        Ref: {group.reference} · {group.listingCount} listing{group.listingCount > 1 ? 's' : ''} found
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-2 md:gap-3">
-                                                <span className="text-xl md:text-2xl font-semibold stat-number" style={{ fontFamily: 'Inter, sans-serif' }}>${group.lowestPrice.toLocaleString()}</span>
-                                                {group.listingCount > 1 && group.highestPrice > group.lowestPrice && (
-                                                    <>
-                                                        <span className="text-[12px] text-muted-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                            to ${group.highestPrice.toLocaleString()}
-                                                        </span>
-                                                        <Badge className="text-[11px] flex items-center gap-1 text-emerald-700 bg-emerald-50/80 border border-emerald-200/60 font-medium">
-                                                            <TrendingDown className="h-3 w-3" />
-                                                            Save ${(group.highestPrice - group.lowestPrice).toLocaleString()}
-                                                        </Badge>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            {group.listings.sort((a, b) => a.price - b.price).map((listing: Watch, idx: number) => (
-                                                <div
-                                                    key={listing.id}
-                                                    className={`flex items-center gap-2 md:gap-3 p-2.5 md:p-3 rounded-xl transition-all duration-300 ${idx === 0 ? 'bg-emerald-50/70 ring-1 ring-emerald-200/50' : 'bg-[var(--warm-50)]/50 hover:bg-[var(--warm-50)]'}`}
-                                                >
-                                                    {listing.image && (
-                                                        <img src={listing.image} alt="" className="w-8 h-8 rounded-lg object-cover bg-slate-50 shrink-0 hidden md:block" />
+                        <div className="space-y-4">
+                            {sortedGrouped.map((group: WatchGroup) => {
+                                const heroImage = group.listings.find(l => l.image)?.image || null;
+                                return (
+                                    <div key={`${group.brand}-${group.reference}`} className="bg-white rounded-2xl shadow-soft border border-slate-100/60 overflow-hidden transition-all duration-400 hover:shadow-elevated">
+                                        <div className="p-4 md:p-6">
+                                            {/* ── Group Header ── */}
+                                            <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 md:mb-5 gap-3 pb-4 border-b border-slate-100/80">
+                                                <div className="flex items-start gap-4">
+                                                    {heroImage ? (
+                                                        <img src={heroImage} alt={`${group.brand} ${group.model}`} className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover bg-slate-50 shrink-0 shadow-sm" />
+                                                    ) : (
+                                                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center shrink-0 border border-slate-100">
+                                                            <WatchIcon className="h-8 w-8 md:h-10 md:w-10 text-slate-300" />
+                                                        </div>
                                                     )}
-                                                    {idx === 0 && <Badge className="bg-emerald-600 text-white text-[11px] shrink-0 font-medium">Best</Badge>}
-                                                    <Badge variant="outline" className="text-[11px] shrink-0 border-slate-200/80">{listing.marketplace}</Badge>
-                                                    <span className="text-[12px] md:text-[13px] text-muted-foreground truncate flex-1 min-w-0" style={{ fontFamily: 'Inter, sans-serif' }}>{listing.seller}</span>
-                                                    <span className={`font-semibold shrink-0 stat-number ${idx === 0 ? 'text-base md:text-lg' : 'text-[13px]'}`} style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                        ${listing.price.toLocaleString()}
-                                                    </span>
-                                                    <Button
-                                                        size="sm"
-                                                        variant={idx === 0 ? "default" : "outline"}
-                                                        asChild
-                                                        className={`rounded-lg text-[11px] px-2.5 md:px-3 shrink-0 h-8 min-w-[52px] transition-all duration-300 ${idx === 0 ? 'btn-navy border-0' : 'border-slate-200/80 hover:border-[var(--gold)] hover:text-[var(--gold)]'}`}
-                                                    >
-                                                        <a href={buildAffiliateLink(listing)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                                                            View <ExternalLink className="h-3 w-3" />
-                                                        </a>
-                                                    </Button>
+                                                    <div className="min-w-0 pt-1">
+                                                        <Link to={`/watch/${slugify(group.brand)}/${slugify(group.model)}/${encodeURIComponent(group.reference)}`} className="hover:text-[var(--gold)] transition-colors">
+                                                            <h3 className="text-[16px] md:text-[19px] font-semibold text-foreground leading-snug" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                                {group.brand} {group.model}
+                                                            </h3>
+                                                        </Link>
+                                                        <p className="text-[12px] text-muted-foreground mt-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                            Ref: {group.reference}
+                                                        </p>
+                                                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                                            <Badge variant="outline" className="text-[11px] border-slate-200/80 font-normal">{group.listingCount} listing{group.listingCount > 1 ? 's' : ''}</Badge>
+                                                            {group.listings[0]?.condition && (
+                                                                <Badge variant="outline" className="text-[11px] border-slate-200/80 font-normal">{group.listings[0].condition}</Badge>
+                                                            )}
+                                                            {group.listings[0]?.year && (
+                                                                <Badge variant="outline" className="text-[11px] border-slate-200/80 font-normal">{group.listings[0].year}</Badge>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            ))}
+                                                <div className="flex flex-col items-end gap-1 shrink-0">
+                                                    <span className="text-[12px] text-muted-foreground uppercase tracking-wider font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>From</span>
+                                                    <span className="text-2xl md:text-[1.75rem] font-semibold stat-number" style={{ fontFamily: 'Inter, sans-serif' }}>${group.lowestPrice.toLocaleString()}</span>
+                                                    {group.listingCount > 1 && group.highestPrice > group.lowestPrice && (
+                                                        <Badge className="text-[11px] flex items-center gap-1 text-emerald-700 bg-emerald-50/80 border border-emerald-200/60 font-medium mt-0.5">
+                                                            <TrendingDown className="h-3 w-3" />
+                                                            Save up to ${(group.highestPrice - group.lowestPrice).toLocaleString()}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* ── Listing Rows ── */}
+                                            <div className="space-y-2">
+                                                {group.listings.sort((a, b) => a.price - b.price).map((listing: Watch, idx: number) => (
+                                                    <div
+                                                        key={listing.id}
+                                                        className={`flex items-center gap-3 md:gap-4 p-3 md:p-3.5 rounded-xl transition-all duration-300 ${idx === 0 ? 'bg-emerald-50/70 ring-1 ring-emerald-200/50' : 'bg-[var(--warm-50)]/50 hover:bg-[var(--warm-50)]'}`}
+                                                    >
+                                                        {/* Listing thumbnail */}
+                                                        {listing.image ? (
+                                                            <img src={listing.image} alt="" className="w-12 h-12 md:w-14 md:h-14 rounded-lg object-cover bg-slate-50 shrink-0 shadow-sm" />
+                                                        ) : (
+                                                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center shrink-0">
+                                                                <WatchIcon className="h-5 w-5 text-slate-300" />
+                                                            </div>
+                                                        )}
+
+                                                        {/* Listing details */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                                                                {idx === 0 && <Badge className="bg-emerald-600 text-white text-[10px] shrink-0 font-medium px-1.5 py-0">Best Price</Badge>}
+                                                                <Badge variant="outline" className="text-[10px] shrink-0 border-slate-200/80 px-1.5 py-0">{listing.marketplace}</Badge>
+                                                                {listing.condition && listing.condition !== group.listings[0]?.condition && (
+                                                                    <Badge variant="outline" className="text-[10px] shrink-0 border-slate-200/80 px-1.5 py-0">{listing.condition}</Badge>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[12px] md:text-[13px] text-muted-foreground truncate" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                                {listing.description ? listing.description.substring(0, 70) + (listing.description.length > 70 ? '…' : '') : `${listing.seller}`}
+                                                            </p>
+                                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                                <span className="text-[11px] text-muted-foreground/70" style={{ fontFamily: 'Inter, sans-serif' }}>{listing.seller}</span>
+                                                                {listing.rating && (
+                                                                    <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground/70">
+                                                                        <Star className="h-2.5 w-2.5 text-[var(--gold)] fill-[var(--gold)]" /> {listing.rating.toFixed(1)}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Price + CTA */}
+                                                        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                                                            <span className={`font-semibold stat-number ${idx === 0 ? 'text-base md:text-lg' : 'text-[14px]'}`} style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                                ${listing.price.toLocaleString()}
+                                                            </span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant={idx === 0 ? "default" : "outline"}
+                                                                asChild
+                                                                className={`rounded-lg text-[11px] px-2.5 md:px-3 shrink-0 h-8 min-w-[52px] transition-all duration-300 ${idx === 0 ? 'btn-navy border-0' : 'border-slate-200/80 hover:border-[var(--gold)] hover:text-[var(--gold)]'}`}
+                                                            >
+                                                                <a href={buildAffiliateLink(listing)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                                                    View <ExternalLink className="h-3 w-3" />
+                                                                </a>
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {sortedAll.map((watch: Watch) => (
                                 <div key={watch.id} className="bg-white rounded-2xl shadow-soft border border-slate-100/60 overflow-hidden transition-all duration-400 hover:shadow-elevated group">
-                                    {watch.image ? (
-                                        <div className="w-full h-40 bg-slate-50 overflow-hidden">
+                                    {/* Image area with overlaid badges */}
+                                    <div className="relative w-full h-48 bg-slate-50 overflow-hidden">
+                                        {watch.image ? (
                                             <img src={watch.image} alt={`${watch.brand} ${watch.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                        ) : (
+                                            <div className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+                                                <WatchIcon className="h-12 w-12 text-slate-200" />
+                                            </div>
+                                        )}
+                                        {/* Overlaid badges */}
+                                        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                                            <Badge className="text-[10px] bg-white/90 backdrop-blur-sm text-foreground border border-white/50 shadow-sm font-medium">{watch.marketplace}</Badge>
+                                            {watch.trusted && (
+                                                <Badge className="text-[10px] bg-emerald-500/90 backdrop-blur-sm text-white border-0 shadow-sm flex items-center gap-0.5 font-medium">
+                                                    <ShieldCheck className="h-3 w-3" /> Trusted
+                                                </Badge>
+                                            )}
                                         </div>
-                                    ) : (
-                                        <div className="w-full h-40 bg-[var(--warm-50)] flex items-center justify-center">
-                                            <WatchIcon className="h-10 w-10 text-slate-200" />
-                                        </div>
-                                    )}
-                                    <div className="p-5">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <Badge variant="outline" className="text-[11px] border-slate-200/80">{watch.marketplace}</Badge>
-                                            {watch.trusted && <ShieldCheck className="h-4 w-4 text-emerald-500" />}
-                                        </div>
-                                        <h3 className="font-semibold text-[15px] mb-1 text-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>{watch.brand} {watch.model}</h3>
-                                        <p className="text-[12px] text-muted-foreground mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>Ref: {watch.reference} · {watch.condition}</p>
+                                        {watch.condition && (
+                                            <Badge className="absolute top-3 right-3 text-[10px] bg-black/60 backdrop-blur-sm text-white border-0 shadow-sm font-normal">{watch.condition}</Badge>
+                                        )}
+                                    </div>
+
+                                    <div className="p-4 md:p-5">
+                                        <h3 className="font-semibold text-[15px] md:text-[16px] mb-1 text-foreground leading-snug" style={{ fontFamily: 'Inter, sans-serif' }}>{watch.brand} {watch.model}</h3>
+                                        <p className="text-[12px] text-muted-foreground mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                            Ref: {watch.reference}{watch.year ? ` · ${watch.year}` : ''}
+                                        </p>
+                                        {watch.description && (
+                                            <p className="text-[11px] text-muted-foreground/70 mb-3 line-clamp-2 leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                {watch.description.substring(0, 90)}{watch.description.length > 90 ? '…' : ''}
+                                            </p>
+                                        )}
+                                        {!watch.description && <div className="mb-3" />}
                                         <div className="flex items-center justify-between">
                                             <div>
                                                 <span className="text-xl font-semibold stat-number" style={{ fontFamily: 'Inter, sans-serif' }}>${watch.price.toLocaleString()}</span>
@@ -340,8 +396,13 @@ const BrowseMarketplace = () => {
                                                 </a>
                                             </Button>
                                         </div>
-                                        <div className="mt-2.5 pt-2.5 border-t border-slate-100/60 text-[12px] text-muted-foreground flex items-center gap-1" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                            {watch.seller} · <Star className="h-3 w-3 text-[var(--gold)]" /> {watch.rating}
+                                        <div className="mt-2.5 pt-2.5 border-t border-slate-100/60 text-[12px] text-muted-foreground flex items-center gap-1.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                            {watch.seller}
+                                            {watch.rating && (
+                                                <span className="flex items-center gap-0.5">
+                                                    · <Star className="h-3 w-3 text-[var(--gold)] fill-[var(--gold)]" /> {watch.rating.toFixed(1)}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
