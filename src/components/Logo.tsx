@@ -8,11 +8,16 @@ interface LogoProps {
 }
 
 const IconSvg: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="60 200 90 120" fill="none" className={className} aria-hidden="true">
-    <line x1="81" y1="219" x2="129" y2="294" stroke="#FFFFFF" strokeWidth="10" strokeLinecap="round" />
-    <line x1="84" y1="260" x2="129" y2="294" stroke="#FFFFFF" strokeWidth="10" strokeLinecap="round" />
-    <line x1="97" y1="270" x2="120" y2="303" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" opacity="0.95" />
-    <line x1="122" y1="225" x2="107" y2="292" stroke="#b8975a" strokeWidth="10" strokeLinecap="round" />
+  <svg viewBox="0 0 100 120" fill="none" className={className} aria-hidden="true">
+    {/* Pivot point at (58, 72) — all hands pass through here */}
+    {/* Long hand — upper-left to lower-right, passing through pivot */}
+    <line x1="18" y1="8" x2="78" y2="100" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+    {/* Second hand — upper-center to lower-left, passing through pivot */}
+    <line x1="38" y1="12" x2="68" y2="98" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
+    {/* Gold accent hand (seconds) — going up-right from pivot */}
+    <line x1="58" y1="72" x2="68" y2="8" stroke="#b8975a" strokeWidth="4.5" strokeLinecap="round" />
+    {/* Small gold dot at pivot point */}
+    <circle cx="58" cy="72" r="4" fill="#b8975a" />
   </svg>
 );
 
